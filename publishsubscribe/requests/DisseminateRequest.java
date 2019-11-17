@@ -2,7 +2,6 @@ package publishsubscribe.requests;
 
 import babel.requestreply.ProtocolRequest;
 import dissemination.Message;
-import dissemination.message.DisseminationMessage;
 
 public class DisseminateRequest extends ProtocolRequest {
 

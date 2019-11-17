@@ -15,7 +15,6 @@ import babel.requestreply.ProtocolRequest;
 import dissemination.Message;
 import floodbcast.FloodBCast;
 import dissemination.Dissemination;
-import dissemination.message.DisseminationMessage;
 import floodbcast.delivers.FloodBCastDeliver;
 import floodbcast.requests.FloodBCastRequest;
 import publishsubscribe.delivers.PSDeliver;
