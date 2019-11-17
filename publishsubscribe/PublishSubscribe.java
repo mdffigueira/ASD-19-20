@@ -126,8 +126,9 @@ public class PublishSubscribe extends GenericProtocol {
     };
 
     private void disseminateRequest(byte[] top, byte[] m, int typeM) {
-
-    	DisseminationMessage message = new DisseminationMessage(m, typeM, top);
+        String topic = new String(top, StandardCharsets.UTF_8);
+        
+    	DisseminationMessage message = new DisseminationMessage(m, typeM, topic);
         DisseminateRequest dissReq = new DisseminateRequest(top, message);
         dissReq.setDestination(Dissemination.PROTOCOL_ID);
 
