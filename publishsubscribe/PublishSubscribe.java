@@ -14,6 +14,7 @@ import babel.protocol.GenericProtocol;
 import babel.requestreply.ProtocolRequest;
 import floodbcast.FloodBCast;
 import dissemination.Dissemination;
+import dissemination.message.DisseminationMessage;
 import floodbcast.delivers.FloodBCastDeliver;
 import floodbcast.requests.FloodBCastRequest;
 import publishsubscribe.delivers.PSDeliver;
@@ -29,8 +30,8 @@ public class PublishSubscribe extends GenericProtocol {
     public final static String PROTOCOL_NAME = "Publish Subscribe";
 
     public final static int SUBSCRIBE = 1;
-    public final static int PUBLISH = 2;
-    public final static int UNSUBSCRIBE = 3;
+    public final static int UNSUBSCRIBE = 2;
+    public final static int PUBLISH = 3;
     private boolean isGossip;
 
     //Set of Topics
@@ -76,7 +77,7 @@ public class PublishSubscribe extends GenericProtocol {
 
             //DISSEMINATION
             else {
-                disseminateRequest(null, req.getTopic(), SUBSCRIBE);
+                disseminateRequest(req.getTopic(), null, SUBSCRIBE);
             }
         }
     };
@@ -92,7 +93,7 @@ public class PublishSubscribe extends GenericProtocol {
                 String topic = new String(req.getTopic(), StandardCharsets.UTF_8);
                 topics.remove(topic);
             } else {
-                disseminateRequest(null, req.getTopic(), UNSUBSCRIBE);
+                disseminateRequest(req.getTopic(), null, UNSUBSCRIBE);
             }
         }
     };
@@ -119,14 +120,15 @@ public class PublishSubscribe extends GenericProtocol {
                     System.exit(1);
                 }
             } else {
-                disseminateRequest(req.getMessage(), req.getTopic(), PUBLISH);
+                disseminateRequest(req.getTopic(), req.getMessage(), PUBLISH);
             }
         }
     };
 
-    private void disseminateRequest(byte[] message, byte[] top, int typeM) {
+    private void disseminateRequest(byte[] top, byte[] m, int typeM) {
 
-        DisseminateRequest dissReq = new DisseminateRequest(message, top, typeM);
+    	DisseminationMessage message = new DisseminationMessage(m, typeM, top);
+        DisseminateRequest dissReq = new DisseminateRequest(top, message);
         dissReq.setDestination(Dissemination.PROTOCOL_ID);
 
         try {

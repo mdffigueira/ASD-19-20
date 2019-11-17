@@ -1,6 +1,7 @@
 package publishsubscribe.requests;
 
 import babel.requestreply.ProtocolRequest;
+import dissemination.message.DisseminationMessage;
 
 public class DisseminateRequest extends ProtocolRequest {
 
@@ -8,13 +9,12 @@ public class DisseminateRequest extends ProtocolRequest {
 
     private byte[] message;
     private byte[] topic;
-    private int typeM;
 
-    public DisseminateRequest(byte[] message, byte[] topic, int type) {
+    public DisseminateRequest(byte[] topic, DisseminationMessage message2) {
         super(DisseminateRequest.REQUEST_ID);
-        if (message != null) {
-            this.message = new byte[message.length];
-            System.arraycopy(message, 0, this.message, 0, message.length);
+        if (message2 != null) {
+            this.message = new byte[message2.getLength()];
+            System.arraycopy(message2, 0, this.message, 0, message2.getLength());
         } else {
             this.message = new byte[0];
         }
@@ -24,7 +24,6 @@ public class DisseminateRequest extends ProtocolRequest {
         } else {
             this.topic = new byte[0];
         }
-        this.typeM = type;
     }
 
     public byte[] getMessage() {
@@ -35,7 +34,4 @@ public class DisseminateRequest extends ProtocolRequest {
         return topic;
     }
 
-    public int getTypeM() {
-        return typeM;
-    }
 }

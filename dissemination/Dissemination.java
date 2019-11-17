@@ -17,21 +17,19 @@ import dht.DHT;
 import dht.Node;
 import dht.notification.RouteDelivery;
 import dissemination.requests.RouteRequest;
-import floodbcast.delivers.FloodBCastDeliver;
 import network.INetwork;
-import publishsubscribe.delivers.PSDeliver;
 import publishsubscribe.requests.DisseminateRequest;
 
 public class Dissemination extends GenericProtocol {
 
 	public final static short PROTOCOL_ID= 900;
 
-	public final static int SUBSCRIBE = 1;
-	public final static int PUBLISH = 2;
-	public final static int UNSUBSCRIBE = 3;
+    public final static String SUBSCRIBE = "SUBMESSAGE";
+    public final static String UNSUBSCRIBE = "UNSUBMESSAGE";
 
 	private Map<String,TreeSet<Node>> topics;
 	Node nodeID;
+	
 
 	public Dissemination(INetwork net) throws HandlerRegistrationException{
 
@@ -56,30 +54,27 @@ public class Dissemination extends GenericProtocol {
 			//Create Message
 			DisseminateRequest req = (DisseminateRequest) r;
 
-			int typeMessage = req.getTypeM();
+			String msg = new String(req.getMessage(), StandardCharsets.UTF_8);
 
-			switch(typeMessage) {
+			switch(msg) {
 			case SUBSCRIBE:
-				subscribe(req);
+				subscribe(req.getTopic(), msg);
 				break;
 			case UNSUBSCRIBE:
-				unsubscribe(req);
+				unsubscribe(req.getTopic(), msg);
 				break;
-			case PUBLISH:
-				publish(req);
-				break;
-			default: ;
-
+			default:
+				publish(req.getTopic(), msg);
 			}
 		}
 	};
 
-	public void subscribe(DisseminateRequest req) {
-		String topic = new String(req.getTopic(), StandardCharsets.UTF_8);
+	private void subscribe(byte[] topic, String msg) {
+		String topicS = new String(topic, StandardCharsets.UTF_8);
 		TreeSet<Node> nodes = null;
 		
-		if(topics.containsKey(topic)){
-			nodes = topics.get(topic);
+		if(topics.containsKey(topicS)){
+			nodes = topics.get(topicS);
 			if(!nodes.contains(nodeID)) {
 				nodes.add(nodeID);
 			}
@@ -89,9 +84,36 @@ public class Dissemination extends GenericProtocol {
 			nodes.add(nodeID);
 		}
 		
-		topics.put(topic, nodes);
+		topics.put(topicS, nodes);
 		
-		RouteRequest r = new RouteRequest(req.getMessage(), req.getTopic(), req.getTypeM());
+		routeMessage(topic, msg);
+	}
+	
+	
+
+	private void unsubscribe(byte[] topic, String msg) {
+		String topicS = new String(topic, StandardCharsets.UTF_8);
+		TreeSet<Node> nodes = null;
+		
+		if(topics.containsKey(topicS)){
+			nodes = topics.get(topicS);
+			nodes.remove(nodeID);
+		}
+		topics.put(topicS, nodes);
+		if (nodes.size() > 0) {
+			routeMessage(topic, msg);
+		}
+		
+	}
+	
+	private void publish(byte[] topic, String msg) {
+		
+	}
+	
+	private void routeMessage(byte[] topic, String msg) {
+
+		String topicS = new String(topic, StandardCharsets.UTF_8);
+		RouteRequest r = new RouteRequest(topicS.hashCode(), Messade);
 		r.setDestination(DHT.PROTOCOL_ID);
 	    try {
             sendRequest(r);
@@ -101,38 +123,19 @@ public class Dissemination extends GenericProtocol {
         }
 	}
 	
-	
-
-	public void unsubscribe(DisseminateRequest req) {
-		String topic = new String(req.getTopic(), StandardCharsets.UTF_8);
-		TreeSet<Node> nodes = null;
-		
-		if(topics.containsKey(topic)){
-			nodes = topics.get(topic);
-			nodes.remove(nodeID);
-		}
-		topics.put(topic, nodes);
-		if (nodes.size() > 0) {
-			
-		}
-		
-	}
-	
 	private ProtocolNotificationHandler uponRouteDelivery = new ProtocolNotificationHandler() {
 		
 		@Override
 		public void uponNotification(ProtocolNotification not) {
-//			FloodBCastDeliver req = (FloodBCastDeliver) not;
-//			String topicNotif = new String(req.getTopic(), StandardCharsets.UTF_8);
-//	        if(topics.containsKey(topicNotif)) {
-//	        	PSDeliver deliver = new PSDeliver(req.getTopic(), req.getMessage());
-//	        	triggerNotification(deliver);
-//	        }
+			RouteDelivery req = (RouteDelivery) not;
+			
+			Node node = req.getNode();
+			if(node != nodeID) {
+				
+			}	
 		}
 	};	
 
-	public void publish(DisseminateRequest req) {
-		
-	}
+
 
 }

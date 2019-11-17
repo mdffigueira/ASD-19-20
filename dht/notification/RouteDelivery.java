@@ -15,7 +15,7 @@ public class RouteDelivery extends ProtocolNotification {
         this.node = n;
     }
 
-    public Node getMembership() {
+    public Node getNode() {
         return node;
     }
 
