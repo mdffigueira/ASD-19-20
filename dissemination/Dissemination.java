@@ -16,6 +16,7 @@ import babel.requestreply.ProtocolRequest;
 import dht.DHT;
 import dht.Node;
 import dht.notification.RouteDelivery;
+import dissemination.notification.MessageDelivery;
 import dissemination.requests.RouteRequest;
 import network.INetwork;
 import publishsubscribe.requests.DisseminateRequest;
@@ -108,7 +109,21 @@ public class Dissemination extends GenericProtocol {
 	}
 	
 	private void publish(byte[] topic, Message msg) {
-		
+		if(topics.containsKey(topic)) {
+			TreeSet<Node> nodes = topics.get(topic);
+			for(Node n: nodes) {
+				if(n == nodeID) {
+					MessageDelivery notification = new MessageDelivery(topic, msg);
+					triggerNotification(notification);
+				}
+				else {
+					
+				}
+			}
+		}
+		else {
+			routeMessage(topic, msg);
+		}
 	}
 	
 	private void routeMessage(byte[] topic, Message msg) {
