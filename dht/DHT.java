@@ -8,18 +8,18 @@ import babel.protocol.GenericProtocol;
 import babel.protocol.event.ProtocolMessage;
 import babel.requestreply.ProtocolRequest;
 import babel.timer.ProtocolTimer;
-import dht.messages.FindSuccessorMessage;
-import dht.messages.FindSuccessorResponseMessage;
-import dht.messages.FindSuccessorPredecessorMessage;
-import dht.messages.FindSuccessorPredecessorResponseMessage;
+import dht.messages.*;
+import dht.notification.*;
 
-import dht.messages.NotifyMessage;
+import dht.notification.RouteDelivery;
 import dht.timers.FixFingerTimer;
 import dht.timers.StabilizeTimer;
+import dissemination.Message;
 import dissemination.requests.RouteRequest;
 import network.Host;
 import network.INetwork;
 import network.INodeListener;
+import org.apache.logging.log4j.core.appender.routing.Route;
 
 import java.net.InetAddress;
 import java.util.Properties;
@@ -236,8 +236,41 @@ public class DHT extends GenericProtocol implements INodeListener {
         @Override
         public void uponRequest(ProtocolRequest protocolRequest) {
             RouteRequest req = (RouteRequest) protocolRequest;
-          //  Node ID= req.getId();
-            //int T = req.get
+            Node msgId = req.getID();
+            Message msg = req.getMsg();
+            Node toSend = findSuccessor(msgId.getId());
+            if (toSend.getId() != nodeID.getId()) {
+                RouteMessage m = new RouteMessage(msgId, msg);
+                sendMessage(m, toSend.getMyself());
+                RouteNotify deliverN = new RouteNotify(toSend, 0);
+                triggerNotification(deliverN);
+            } else {
+                RouteDelivery routeDelivery = new RouteDelivery(msgId, msg);
+                triggerNotification(routeDelivery);
+            }
+            // Node ID= req.getId();
+            // int T = req.get
+
+        }
+    };
+
+    private final ProtocolMessageHandler uponRouteMessage = new ProtocolMessageHandler() {
+        @Override
+        public void receive(ProtocolMessage protocolMessage) {
+            RouteMessage req = (RouteMessage) protocolMessage;
+            Node msgId = req.getNId();
+            Message msg = req.getMessage();
+            Node toSend = findSuccessor(msgId.getId());
+            if(toSend.getId()!=nodeID.getId()){
+                RouteMessage m = new RouteMessage(msgId,msg);
+                sendMessage(m,toSend.getMyself());
+                RouteNotify deliverN = new RouteNotify(toSend,1 );
+                triggerNotification(deliverN);
+            }
+            else {
+                RouteDelivery routeDelivery=new RouteDelivery(msgId,msg);
+                triggerNotification(routeDelivery);
+            }
 
 
         }

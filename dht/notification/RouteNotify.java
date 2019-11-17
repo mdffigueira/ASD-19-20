@@ -2,33 +2,35 @@ package dht.notification;
 
 import babel.notification.ProtocolNotification;
 import dht.Node;
-import dissemination.Message;
 
+public class RouteNotify extends ProtocolNotification {
 
-public class RouteDelivery extends ProtocolNotification {
     public final static short NOTIFICATION_ID = 101;
     public final static String NOTIFICATION_NAME = "node";
 
     public final Node node;
-    Message m;
+    public int isToAdd;
 
-    public RouteDelivery(Node n , Message m ) {
-        super(RouteDelivery.NOTIFICATION_ID, RouteDelivery.NOTIFICATION_NAME);
+
+
+    public RouteNotify(Node n , int isToAdd) {
+        super(RouteNotify.NOTIFICATION_ID, RouteNotify.NOTIFICATION_NAME);
         this.node = n;
-        this.m = m;
-    }
+        this.isToAdd= isToAdd;
 
+    }
     public Node getNode() {
         return node;
     }
-
-    public Message getM(){
-        return m;
+    public int getIsToAdd(){
+        return isToAdd;
     }
+
     @Override
     public String toString() {
         return "RouteDeliveryNotification{" +
-                "node=" + node +
+                "node=" + node +"isToAdd="+ isToAdd+
                 '}';
     }
+
 }
