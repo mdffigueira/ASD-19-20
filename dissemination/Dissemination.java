@@ -17,7 +17,6 @@ import babel.protocol.event.ProtocolMessage;
 import babel.requestreply.ProtocolRequest;
 import dht.DHT;
 import dht.Node;
-import dht.messages.NotifyMessage;
 import dht.notification.RouteDelivery;
 import dht.notification.RouteNotify;
 import dissemination.message.DisseminationMessage;
@@ -73,7 +72,7 @@ public class Dissemination extends GenericProtocol {
 			case UNSUBSCRIBE:
 				unsubscribe(req.getTopic(), msg);
 				break;
-			default:
+			case PUBLISH:
 				publish(req.getTopic(), msg);
 			}
 		}
@@ -90,6 +89,11 @@ public class Dissemination extends GenericProtocol {
 			}
 		}
 		else {
+
+			TreeSet<Node> nodes = new TreeSet<Node>();
+			nodes.add(nodeID);
+			Topic t = new Topic(null, nodes);
+			topics.put(topicS, t);
 			routeMessage(topic, msg);
 		}
 
@@ -111,6 +115,8 @@ public class Dissemination extends GenericProtocol {
 			}
 		}
 		else {
+			Topic t = new Topic(null, new TreeSet<Node>());
+			topics.put(topicS, t);
 			routeMessage(topic, msg);
 		}
 
@@ -142,6 +148,8 @@ public class Dissemination extends GenericProtocol {
 			}
 		}
 		else {
+			Topic t = new Topic(null, new TreeSet<Node>());
+			topics.put(topicS, t);
 			routeMessage(topic, msg);
 		}
 	}
@@ -173,23 +181,22 @@ public class Dissemination extends GenericProtocol {
 			case SUBSCRIBE:
 				if(topics.containsKey(topicS)) {
 					Topic thisTop = topics.get(topicS);
-					thisTop.setResponsible(nodeID);
 					thisTop.addNode(nodeID);
 				}
 				else {
 					TreeSet<Node> nodes = new TreeSet<Node>();
 					nodes.add(nodeID);
-					Topic t = new Topic(nodeID,nodes);
+					Topic t = new Topic(null,nodes);
 					topics.put(topicS, t);
 				}
 				break;
 			case UNSUBSCRIBE:
 				if(topics.containsKey(topicS)) {
 					Topic t = topics.get(topicS);
-					int size = t.removeNode(nodeID);	
+					t.removeNode(nodeID);	
 				}
 				else {
-					Topic t = new Topic(nodeID, new TreeSet<Node>());
+					Topic t = new Topic(null, new TreeSet<Node>());
 					topics.put(topicS, t);
 				}
 				break;
@@ -224,6 +231,22 @@ public class Dissemination extends GenericProtocol {
 	private final ProtocolMessageHandler uponDisseminationMessage = new ProtocolMessageHandler() {
 		@Override
 		public void receive(ProtocolMessage protocolMessage) {
+			DisseminationMessage req = (DisseminationMessage) protocolMessage;
+			Message m = req.getPayload();
+			
+			switch(m.getTypeM()) {
+			case SUBSCRIBE:
+				subscribe(m.topic, m);
+				break;
+			case UNSUBSCRIBE:
+				unsubscribe(m.topic, m);
+				break;
+			case PUBLISH:
+				publish(m.topic, m);
+				break;
+			}
+			
+			
 		}
 	};
 
@@ -231,6 +254,28 @@ public class Dissemination extends GenericProtocol {
 		//TODO:
 		@Override
 		public void uponNotification(ProtocolNotification not) {
+			RouteNotify req = (RouteNotify) not;
+			Message m = req.getMsg();
+			String topicS = new String(m.getTopic(), StandardCharsets.UTF_8);
+			int toAdd = req.isToAdd;
+			if(toAdd == 0) {
+				Topic t = topics.get(topicS);
+				t.setResponsible(req.node);
+			}
+			switch(m.getTypeM()) {
+			case SUBSCRIBE:
+				if(toAdd != 0)
+					subscribe(m.topic, m);
+				break;
+			case UNSUBSCRIBE:
+				if(toAdd != 0)
+					unsubscribe(m.topic, m);
+				break;
+			case PUBLISH:
+				if(toAdd != 0)
+					publish(m.topic, m);
+				break;
+			}
 		}
 	};
 
