@@ -8,14 +8,18 @@ import java.util.TreeSet;
 
 import babel.exceptions.DestinationProtocolDoesNotExist;
 import babel.exceptions.HandlerRegistrationException;
+import babel.handlers.ProtocolMessageHandler;
 import babel.handlers.ProtocolNotificationHandler;
 import babel.handlers.ProtocolRequestHandler;
 import babel.notification.ProtocolNotification;
 import babel.protocol.GenericProtocol;
+import babel.protocol.event.ProtocolMessage;
 import babel.requestreply.ProtocolRequest;
 import dht.DHT;
 import dht.Node;
+import dht.messages.NotifyMessage;
 import dht.notification.RouteDelivery;
+import dht.notification.RouteNotify;
 import dissemination.message.DisseminationMessage;
 import dissemination.notification.MessageDelivery;
 import dissemination.requests.RouteRequest;
@@ -41,9 +45,10 @@ public class Dissemination extends GenericProtocol {
 
 		//Notification
 		registerNotificationHandler(RouteDelivery.NOTIFICATION_ID, uponRouteDelivery);
-
+		registerNotificationHandler(RouteNotify.NOTIFICATION_ID, uponRouteNotify);
+		
 		registerRequestHandler(DisseminateRequest.REQUEST_ID, uponDisseminateRequest);
-
+		registerMessageHandler(DisseminationMessage.MSG_CODE, uponDisseminationMessage, DisseminationMessage.serializer);
 
 	}
 	@Override
@@ -87,7 +92,7 @@ public class Dissemination extends GenericProtocol {
 		else {
 			routeMessage(topic, msg);
 		}
-		
+
 	}
 
 
@@ -100,8 +105,13 @@ public class Dissemination extends GenericProtocol {
 			thisTopic = topics.get(topicS);
 			int size = thisTopic.removeNode(nodeID);
 			if(size == 0) {
-				//sendUnsub to next
+				//sendUnsub to responsibleNode
+				DisseminationMessage m = new DisseminationMessage(topic, msg);
+				sendMessage(m, thisTopic.getResponsible().getMyself());
 			}
+		}
+		else {
+			routeMessage(topic, msg);
 		}
 
 	}
@@ -112,17 +122,19 @@ public class Dissemination extends GenericProtocol {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 
 		if(topics.containsKey(topicS)) {
-			TreeSet<Node> nodes = topics.get(topicS);
-			
-			for(Node n: nodes) {
+			Topic thisTopic = topics.get(topicS);
+
+			for(Node n: thisTopic.getNodes()) {
 				if(n == nodeID) {
 					sendM = true;
 				}
 				else {
-					DisseminationMessage msgOut = new DisseminationMessage(topic, msg.getMessage(), nodes);
+					DisseminationMessage msgOut = new DisseminationMessage(topic, msg);
 					sendMessage(msgOut, n.getMyself());
 				}
 			}
+			DisseminationMessage msgOut = new DisseminationMessage(topic, msg);
+			sendMessage(msgOut, thisTopic.getResponsible().getMyself());
 
 			if(sendM) {
 				MessageDelivery notification = new MessageDelivery(topic, msg);
@@ -149,28 +161,77 @@ public class Dissemination extends GenericProtocol {
 	}
 
 	private ProtocolNotificationHandler uponRouteDelivery = new ProtocolNotificationHandler() {
-
+		//TODO:
 		@Override
 		public void uponNotification(ProtocolNotification not) {
 			RouteDelivery req = (RouteDelivery) not;
+			Message m = req.getM();
 
-			int typeM = req.getTypeM();
-			
-			switch(typeM) {
+			String topicS = new String(m.getTopic(), StandardCharsets.UTF_8);
+
+			switch(m.getTypeM()) {
 			case SUBSCRIBE:
-				subscribe();
+				if(topics.containsKey(topicS)) {
+					Topic thisTop = topics.get(topicS);
+					thisTop.setResponsible(nodeID);
+					thisTop.addNode(nodeID);
+				}
+				else {
+					TreeSet<Node> nodes = new TreeSet<Node>();
+					nodes.add(nodeID);
+					Topic t = new Topic(nodeID,nodes);
+					topics.put(topicS, t);
+				}
 				break;
 			case UNSUBSCRIBE:
-				unsubscribte();
+				if(topics.containsKey(topicS)) {
+					Topic t = topics.get(topicS);
+					int size = t.removeNode(nodeID);	
+				}
+				else {
+					Topic t = new Topic(nodeID, new TreeSet<Node>());
+					topics.put(topicS, t);
+				}
 				break;
 			case PUBLISH:
-				publish();
+				if(topics.containsKey(topicS)) {
+					Topic thisTopic = topics.get(topicS);
+
+					boolean sendM = false;
+					for(Node n: thisTopic.getNodes()) {
+						if(n == nodeID) {
+							sendM = true;
+						}
+						else {
+							DisseminationMessage msgOut = new DisseminationMessage(m.topic, m);
+							sendMessage(msgOut, n.getMyself());
+						}
+					}
+					DisseminationMessage msgOut = new DisseminationMessage(m.topic, m);
+					sendMessage(msgOut, thisTopic.getResponsible().getMyself());
+
+					if(sendM) {
+						MessageDelivery notification = new MessageDelivery(m.topic, m);
+						triggerNotification(notification);
+					}
+				}
 				break;
-			
+
 			}
 		}
 	};	
 
+	private final ProtocolMessageHandler uponDisseminationMessage = new ProtocolMessageHandler() {
+		@Override
+		public void receive(ProtocolMessage protocolMessage) {
+		}
+	};
 
+	private ProtocolNotificationHandler uponRouteNotify = new ProtocolNotificationHandler() {
+		//TODO:
+		@Override
+		public void uponNotification(ProtocolNotification not) {
+		}
+	};
 
 }

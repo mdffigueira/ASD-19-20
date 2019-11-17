@@ -40,5 +40,9 @@ public class Topic {
 		return nodes.size();
 	}
 
+	public void setResponsible(Node nodeID) {
+		responsibleNode = nodeID;
+	}
+
 
 }
