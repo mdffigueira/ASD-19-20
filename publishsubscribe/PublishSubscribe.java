@@ -13,6 +13,7 @@ import babel.notification.ProtocolNotification;
 import babel.protocol.GenericProtocol;
 import babel.requestreply.ProtocolRequest;
 import dissemination.Message;
+import dissemination.notification.MessageDelivery;
 import floodbcast.FloodBCast;
 import dissemination.Dissemination;
 import floodbcast.delivers.FloodBCastDeliver;
@@ -49,7 +50,8 @@ public class PublishSubscribe extends GenericProtocol {
 
         //Notifications Produced
         registerNotification(PSDeliver.NOTIFICATION_ID, PSDeliver.NOTIFICATION_NAME);
-
+        registerNotificationHandler(MessageDelivery.NOTIFICATION_ID, uponMessageDelivery);
+        
         registerNotificationHandler(FloodBCastDeliver.NOTIFICATION_ID, uponFloodBCastDeliver);
     }
 
@@ -149,6 +151,16 @@ public class PublishSubscribe extends GenericProtocol {
                 PSDeliver deliver = new PSDeliver(req.getTopic(), req.getMessage());
                 triggerNotification(deliver);
             }
+        }
+    };
+    
+    private ProtocolNotificationHandler uponMessageDelivery = new ProtocolNotificationHandler() {
+
+        @Override
+        public void uponNotification(ProtocolNotification not) {
+            MessageDelivery req = (MessageDelivery) not;
+            PSDeliver deliver = new PSDeliver(req.getTopic(), req.getMessageBody());
+                triggerNotification(deliver);
         }
     };
 }

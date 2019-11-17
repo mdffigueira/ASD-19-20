@@ -16,6 +16,8 @@ import babel.requestreply.ProtocolRequest;
 import dht.DHT;
 import dht.Node;
 import dht.notification.RouteDelivery;
+import dissemination.message.DisseminationMessage;
+import dissemination.notification.MessageDelivery;
 import dissemination.requests.RouteRequest;
 import network.INetwork;
 import publishsubscribe.requests.DisseminateRequest;
@@ -24,23 +26,24 @@ public class Dissemination extends GenericProtocol {
 
 	public final static short PROTOCOL_ID= 900;
 
-    public final static int SUBSCRIBE = 1;
-    public final static int UNSUBSCRIBE = 2;
-    public final static int PUBLISH = 3;
+	public final static int SUBSCRIBE = 1;
+	public final static int UNSUBSCRIBE = 2;
+	public final static int PUBLISH = 3;
 
 	private Map<String,TreeSet<Node>> topics;
 	Node nodeID;
-	
+
 
 	public Dissemination(INetwork net) throws HandlerRegistrationException{
 
 		super("Dissemination",PROTOCOL_ID,net);
+
 		//Notification
 		registerNotificationHandler(RouteDelivery.NOTIFICATION_ID, uponRouteDelivery);
 
 		registerRequestHandler(DisseminateRequest.REQUEST_ID, uponDisseminateRequest);
-		
-		
+
+
 	}
 	@Override
 	public void init(Properties properties) {
@@ -73,7 +76,7 @@ public class Dissemination extends GenericProtocol {
 	private void subscribe(byte[] topic, Message msg) {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 		TreeSet<Node> nodes = null;
-		
+
 		if(topics.containsKey(topicS)){
 			nodes = topics.get(topicS);
 			if(!nodes.contains(nodeID)) {
@@ -84,18 +87,18 @@ public class Dissemination extends GenericProtocol {
 			nodes = new TreeSet<Node>();
 			nodes.add(nodeID);
 		}
-		
+
 		topics.put(topicS, nodes);
-		
+
 		routeMessage(topic, msg);
 	}
-	
-	
+
+
 
 	private void unsubscribe(byte[] topic, Message msg) {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 		TreeSet<Node> nodes = null;
-		
+
 		if(topics.containsKey(topicS)){
 			nodes = topics.get(topicS);
 			nodes.remove(nodeID);
@@ -104,36 +107,63 @@ public class Dissemination extends GenericProtocol {
 		if (nodes.size() > 0) {
 			routeMessage(topic, msg);
 		}
-		
+
 	}
-	
+
 	private void publish(byte[] topic, Message msg) {
-		
+		boolean sendM = false;
+
+		String topicS = new String(topic, StandardCharsets.UTF_8);
+
+		if(topics.containsKey(topicS)) {
+			TreeSet<Node> nodes = topics.get(topicS);
+			TreeSet<Integer> owners = new TreeSet<Integer>();
+			for(Node n: nodes)
+				owners.add(n.getId());
+
+			for(Node n: nodes) {
+				if(n == nodeID) {
+					sendM = true;
+				}
+				else {
+					DisseminationMessage msgOut = new DisseminationMessage(topic, msg.getMessage(), owners);
+					sendMessage(msgOut, n.getMyself());
+				}
+			}
+
+			if(sendM) {
+				MessageDelivery notification = new MessageDelivery(topic, msg);
+				triggerNotification(notification);
+			}
+		}
+		else {
+			routeMessage(topic, msg);
+		}
 	}
-	
+
 	private void routeMessage(byte[] topic, Message msg) {
 
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 
 		RouteRequest r = new RouteRequest(topicS.hashCode(), msg);
 		r.setDestination(DHT.PROTOCOL_ID);
-	    try {
-            sendRequest(r);
-        } catch (DestinationProtocolDoesNotExist destinationProtocolDoesNotExist) {
-            destinationProtocolDoesNotExist.printStackTrace();
-            System.exit(1);
-        }
+		try {
+			sendRequest(r);
+		} catch (DestinationProtocolDoesNotExist destinationProtocolDoesNotExist) {
+			destinationProtocolDoesNotExist.printStackTrace();
+			System.exit(1);
+		}
 	}
-	
+
 	private ProtocolNotificationHandler uponRouteDelivery = new ProtocolNotificationHandler() {
-		
+
 		@Override
 		public void uponNotification(ProtocolNotification not) {
 			RouteDelivery req = (RouteDelivery) not;
-			
+
 			Node node = req.getNode();
 			if(node != nodeID) {
-				
+
 			}	
 		}
 	};	

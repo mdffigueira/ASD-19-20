@@ -70,7 +70,7 @@ public Host getOwner(){return owner;}
             int size = in.readInt();
             byte[] payload = new byte[size];
             in.readBytes(payload);
-            byte[] topic = new byte[size];
+            byte[] topic = new byte[in.readInt()];
             in.readBytes(topic);
             return new FloodBCastProtocolMessage(own,mid, payload, topic);
         }
