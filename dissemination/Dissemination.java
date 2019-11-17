@@ -24,8 +24,9 @@ public class Dissemination extends GenericProtocol {
 
 	public final static short PROTOCOL_ID= 900;
 
-    public final static String SUBSCRIBE = "SUBMESSAGE";
-    public final static String UNSUBSCRIBE = "UNSUBMESSAGE";
+    public final static int SUBSCRIBE = 1;
+    public final static int UNSUBSCRIBE = 2;
+    public final static int PUBLISH = 3;
 
 	private Map<String,TreeSet<Node>> topics;
 	Node nodeID;
@@ -54,9 +55,9 @@ public class Dissemination extends GenericProtocol {
 			//Create Message
 			DisseminateRequest req = (DisseminateRequest) r;
 
-			String msg = new String(req.getMessage(), StandardCharsets.UTF_8);
+			Message msg = req.getMessage();
 
-			switch(msg) {
+			switch(msg.getTypeM()) {
 			case SUBSCRIBE:
 				subscribe(req.getTopic(), msg);
 				break;
@@ -69,7 +70,7 @@ public class Dissemination extends GenericProtocol {
 		}
 	};
 
-	private void subscribe(byte[] topic, String msg) {
+	private void subscribe(byte[] topic, Message msg) {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 		TreeSet<Node> nodes = null;
 		
@@ -91,7 +92,7 @@ public class Dissemination extends GenericProtocol {
 	
 	
 
-	private void unsubscribe(byte[] topic, String msg) {
+	private void unsubscribe(byte[] topic, Message msg) {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 		TreeSet<Node> nodes = null;
 		
@@ -106,15 +107,15 @@ public class Dissemination extends GenericProtocol {
 		
 	}
 	
-	private void publish(byte[] topic, String msg) {
+	private void publish(byte[] topic, Message msg) {
 		
 	}
 	
-	private void routeMessage(byte[] topic, String msg) {
+	private void routeMessage(byte[] topic, Message msg) {
 
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 
-		RouteRequest r = new RouteRequest(topicS.hashCode(), Messade);
+		RouteRequest r = new RouteRequest(topicS.hashCode(), msg);
 		r.setDestination(DHT.PROTOCOL_ID);
 	    try {
             sendRequest(r);
