@@ -30,10 +30,11 @@ public class Dissemination extends GenericProtocol {
 	public final static int UNSUBSCRIBE = 2;
 	public final static int PUBLISH = 3;
 
-	private Map<String,TreeSet<Node>> topics;
+	private Map<String,Topic> topics;
 	Node nodeID;
 
 
+	@SuppressWarnings("deprecation")
 	public Dissemination(INetwork net) throws HandlerRegistrationException{
 
 		super("Dissemination",PROTOCOL_ID,net);
@@ -47,7 +48,7 @@ public class Dissemination extends GenericProtocol {
 	}
 	@Override
 	public void init(Properties properties) {
-		this.topics = new HashMap<String, TreeSet<Node>>();
+		this.topics = new HashMap<String, Topic>();
 		this.nodeID = new Node(myself.hashCode(), myself);
 	}
 
@@ -75,37 +76,32 @@ public class Dissemination extends GenericProtocol {
 
 	private void subscribe(byte[] topic, Message msg) {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
-		TreeSet<Node> nodes = null;
+		Topic thisTopic = null;
 
 		if(topics.containsKey(topicS)){
-			nodes = topics.get(topicS);
-			if(!nodes.contains(nodeID)) {
-				nodes.add(nodeID);
+			thisTopic = topics.get(topicS);
+			if(!thisTopic.nodeExists(nodeID)) {
+				thisTopic.addNode(nodeID);
 			}
 		}
 		else {
-			nodes = new TreeSet<Node>();
-			nodes.add(nodeID);
+			routeMessage(topic, msg);
 		}
-
-		topics.put(topicS, nodes);
-
-		routeMessage(topic, msg);
+		
 	}
 
 
 
 	private void unsubscribe(byte[] topic, Message msg) {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
-		TreeSet<Node> nodes = null;
+		Topic thisTopic;
 
 		if(topics.containsKey(topicS)){
-			nodes = topics.get(topicS);
-			nodes.remove(nodeID);
-		}
-		topics.put(topicS, nodes);
-		if (nodes.size() > 0) {
-			routeMessage(topic, msg);
+			thisTopic = topics.get(topicS);
+			int size = thisTopic.removeNode(nodeID);
+			if(size == 0) {
+				//sendUnsub to next
+			}
 		}
 
 	}
@@ -117,16 +113,13 @@ public class Dissemination extends GenericProtocol {
 
 		if(topics.containsKey(topicS)) {
 			TreeSet<Node> nodes = topics.get(topicS);
-			TreeSet<Integer> owners = new TreeSet<Integer>();
-			for(Node n: nodes)
-				owners.add(n.getId());
-
+			
 			for(Node n: nodes) {
 				if(n == nodeID) {
 					sendM = true;
 				}
 				else {
-					DisseminationMessage msgOut = new DisseminationMessage(topic, msg.getMessage(), owners);
+					DisseminationMessage msgOut = new DisseminationMessage(topic, msg.getMessage(), nodes);
 					sendMessage(msgOut, n.getMyself());
 				}
 			}
@@ -161,10 +154,20 @@ public class Dissemination extends GenericProtocol {
 		public void uponNotification(ProtocolNotification not) {
 			RouteDelivery req = (RouteDelivery) not;
 
-			Node node = req.getNode();
-			if(node != nodeID) {
-
-			}	
+			int typeM = req.getTypeM();
+			
+			switch(typeM) {
+			case SUBSCRIBE:
+				subscribe();
+				break;
+			case UNSUBSCRIBE:
+				unsubscribte();
+				break;
+			case PUBLISH:
+				publish();
+				break;
+			
+			}
 		}
 	};	
 
