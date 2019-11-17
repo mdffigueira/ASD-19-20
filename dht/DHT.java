@@ -42,6 +42,8 @@ public class DHT extends GenericProtocol implements INodeListener {
         registerMessageHandler(FindSuccessorPredecessorResponseMessage.MSG_CODE, uponFindSuccessorPredecessorResponseMessage, FindSuccessorPredecessorResponseMessage.serializer);
 
         registerMessageHandler(NotifyMessage.MSG_CODE, uponNotification, NotifyMessage.serializer);
+
+        registerMessageHandler(RouteMessage.MSG_CODE,uponRouteMessage,RouteMessage.serializer);
         //Requests
         registerRequestHandler(RouteRequest.REQUEST_ID, uponRouteRequest);
 
@@ -236,13 +238,13 @@ public class DHT extends GenericProtocol implements INodeListener {
         @Override
         public void uponRequest(ProtocolRequest protocolRequest) {
             RouteRequest req = (RouteRequest) protocolRequest;
-            Node msgId = req.getID();
+            int msgId = req.getID();
             Message msg = req.getMsg();
-            Node toSend = findSuccessor(msgId.getId());
+            Node toSend = findSuccessor(msgId);
             if (toSend.getId() != nodeID.getId()) {
                 RouteMessage m = new RouteMessage(msgId, msg);
                 sendMessage(m, toSend.getMyself());
-                RouteNotify deliverN = new RouteNotify(toSend, 0);
+                RouteNotify deliverN = new RouteNotify(toSend, null,0);
                 triggerNotification(deliverN);
             } else {
                 RouteDelivery routeDelivery = new RouteDelivery(msgId, msg);
@@ -258,13 +260,13 @@ public class DHT extends GenericProtocol implements INodeListener {
         @Override
         public void receive(ProtocolMessage protocolMessage) {
             RouteMessage req = (RouteMessage) protocolMessage;
-            Node msgId = req.getNId();
+            int msgId = req.getNId();
             Message msg = req.getMessage();
-            Node toSend = findSuccessor(msgId.getId());
+            Node toSend = findSuccessor(msgId);
             if(toSend.getId()!=nodeID.getId()){
                 RouteMessage m = new RouteMessage(msgId,msg);
                 sendMessage(m,toSend.getMyself());
-                RouteNotify deliverN = new RouteNotify(toSend,1 );
+                RouteNotify deliverN = new RouteNotify(toSend,msg,1 );
                 triggerNotification(deliverN);
             }
             else {

@@ -2,6 +2,7 @@ package dht.notification;
 
 import babel.notification.ProtocolNotification;
 import dht.Node;
+import dissemination.Message;
 
 public class RouteNotify extends ProtocolNotification {
 
@@ -10,13 +11,15 @@ public class RouteNotify extends ProtocolNotification {
 
     public final Node node;
     public int isToAdd;
+    Message msg;
 
 
-
-    public RouteNotify(Node n , int isToAdd) {
+    public RouteNotify(Node n , Message msg, int isToAdd) {
         super(RouteNotify.NOTIFICATION_ID, RouteNotify.NOTIFICATION_NAME);
         this.node = n;
         this.isToAdd= isToAdd;
+        this.msg= msg;
+
 
     }
     public Node getNode() {
@@ -24,6 +27,9 @@ public class RouteNotify extends ProtocolNotification {
     }
     public int getIsToAdd(){
         return isToAdd;
+    }
+    public Message getMsg(){
+        return msg;
     }
 
     @Override
