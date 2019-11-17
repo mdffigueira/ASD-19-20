@@ -8,9 +8,10 @@ public class RouteRequest extends ProtocolRequest {
 
     private byte[] message;
     private byte[] topic;
+    private int typeM;
     
 
-    public RouteRequest(byte[] message, byte[] topic) {
+    public RouteRequest(byte[] message, byte[] topic, int type) {
         super(RouteRequest.REQUEST_ID);
         if(message != null) {
             this.message = new byte[message.length];
@@ -24,6 +25,7 @@ public class RouteRequest extends ProtocolRequest {
         } else {
             this.topic = new byte[0];
         }
+        	this.typeM = type;
     }
 
     public byte[] getMessage() {
@@ -33,5 +35,8 @@ public class RouteRequest extends ProtocolRequest {
 	public byte[] getTopic() {
 		return topic;
 	}
-
+	
+	public int getTypeM() {
+		return typeM;
+	}
 }

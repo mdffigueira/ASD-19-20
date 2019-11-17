@@ -6,15 +6,21 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import babel.exceptions.DestinationProtocolDoesNotExist;
 import babel.exceptions.HandlerRegistrationException;
+import babel.handlers.ProtocolNotificationHandler;
 import babel.handlers.ProtocolRequestHandler;
+import babel.notification.ProtocolNotification;
 import babel.protocol.GenericProtocol;
 import babel.requestreply.ProtocolRequest;
 import dht.DHT;
 import dht.Node;
+import dht.notification.RouteDelivery;
 import dissemination.requests.RouteRequest;
-import publishsubscribe.requests.DisseminateRequest;
+import floodbcast.delivers.FloodBCastDeliver;
 import network.INetwork;
+import publishsubscribe.delivers.PSDeliver;
+import publishsubscribe.requests.DisseminateRequest;
 
 public class Dissemination extends GenericProtocol {
 
@@ -31,9 +37,11 @@ public class Dissemination extends GenericProtocol {
 
 		super("Dissemination",PROTOCOL_ID,net);
 		//Notification
-		//      registerNotification(RouteDelivery.NOTIFICATION_ID,RouteDelivery.NOTIFICATION_NAME );
+		registerNotificationHandler(RouteDelivery.NOTIFICATION_ID, uponRouteDelivery);
 
 		registerRequestHandler(DisseminateRequest.REQUEST_ID, uponDisseminateRequest);
+		
+		
 	}
 	@Override
 	public void init(Properties properties) {
@@ -69,7 +77,7 @@ public class Dissemination extends GenericProtocol {
 	public void subscribe(DisseminateRequest req) {
 		String topic = new String(req.getTopic(), StandardCharsets.UTF_8);
 		TreeSet<Node> nodes = null;
-
+		
 		if(topics.containsKey(topic)){
 			nodes = topics.get(topic);
 			if(!nodes.contains(nodeID)) {
@@ -80,30 +88,51 @@ public class Dissemination extends GenericProtocol {
 			nodes = new TreeSet<Node>();
 			nodes.add(nodeID);
 		}
-
+		
 		topics.put(topic, nodes);
-
-		RouteRequest r = new RouteRequest(req.getMessage(), req.getTopic());
+		
+		RouteRequest r = new RouteRequest(req.getMessage(), req.getTopic(), req.getTypeM());
 		r.setDestination(DHT.PROTOCOL_ID);
+	    try {
+            sendRequest(r);
+        } catch (DestinationProtocolDoesNotExist destinationProtocolDoesNotExist) {
+            destinationProtocolDoesNotExist.printStackTrace();
+            System.exit(1);
+        }
 	}
+	
+	
 
 	public void unsubscribe(DisseminateRequest req) {
 		String topic = new String(req.getTopic(), StandardCharsets.UTF_8);
 		TreeSet<Node> nodes = null;
-
+		
 		if(topics.containsKey(topic)){
 			nodes = topics.get(topic);
 			nodes.remove(nodeID);
 		}
 		topics.put(topic, nodes);
 		if (nodes.size() > 0) {
-
+			
 		}
-
+		
 	}
+	
+	private ProtocolNotificationHandler uponRouteDelivery = new ProtocolNotificationHandler() {
+		
+		@Override
+		public void uponNotification(ProtocolNotification not) {
+//			FloodBCastDeliver req = (FloodBCastDeliver) not;
+//			String topicNotif = new String(req.getTopic(), StandardCharsets.UTF_8);
+//	        if(topics.containsKey(topicNotif)) {
+//	        	PSDeliver deliver = new PSDeliver(req.getTopic(), req.getMessage());
+//	        	triggerNotification(deliver);
+//	        }
+		}
+	};	
 
 	public void publish(DisseminateRequest req) {
-
+		
 	}
 
 }
