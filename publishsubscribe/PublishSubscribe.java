@@ -12,6 +12,7 @@ import babel.handlers.ProtocolRequestHandler;
 import babel.notification.ProtocolNotification;
 import babel.protocol.GenericProtocol;
 import babel.requestreply.ProtocolRequest;
+import dissemination.Message;
 import floodbcast.FloodBCast;
 import dissemination.Dissemination;
 import dissemination.message.DisseminationMessage;
@@ -127,8 +128,7 @@ public class PublishSubscribe extends GenericProtocol {
 
     private void disseminateRequest(byte[] top, byte[] m, int typeM) {
         String topic = new String(top, StandardCharsets.UTF_8);
-        
-    	DisseminationMessage message = new DisseminationMessage(m, typeM, topic);
+    	Message message = new Message(m, typeM,top);
         DisseminateRequest dissReq = new DisseminateRequest(top, message);
         dissReq.setDestination(Dissemination.PROTOCOL_ID);
 

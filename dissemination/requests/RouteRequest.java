@@ -10,7 +10,7 @@ public class RouteRequest extends ProtocolRequest {
     private byte[] message;
     
 
-    public RouteRequest(byte[] topic, byte[] msg) {
+    public RouteRequest(byte[] topic, Message msg) {
         super(RouteRequest.REQUEST_ID);
         if(topic != null) {
             this.topic = new byte[topic.length];

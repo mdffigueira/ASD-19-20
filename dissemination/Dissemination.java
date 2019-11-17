@@ -113,6 +113,7 @@ public class Dissemination extends GenericProtocol {
 	private void routeMessage(byte[] topic, String msg) {
 
 		String topicS = new String(topic, StandardCharsets.UTF_8);
+
 		RouteRequest r = new RouteRequest(topicS.hashCode(), Messade);
 		r.setDestination(DHT.PROTOCOL_ID);
 	    try {
