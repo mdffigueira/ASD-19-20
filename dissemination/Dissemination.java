@@ -241,7 +241,7 @@ public class Dissemination extends GenericProtocol {
 					unsubscribe(m.topic, m, m.getNodeInterested());
 					break;
 				case PUBLISH:
-					publish(m.topic, m, m.getNodeInterested(), req.getFrom());
+					publish(m.topic, m, m.getNodeInterested());
 					break;
 			}
 
