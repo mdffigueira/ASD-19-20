@@ -68,25 +68,25 @@ public class Dissemination extends GenericProtocol {
 			msg.setSender(nodeID);
 
 			switch(msg.getTypeM()) {
-				case SUBSCRIBE:
-					subscribe(req.getTopic(), msg, nodeID);
-					break;
-				case UNSUBSCRIBE:
-					unsubscribe(req.getTopic(), msg, nodeID);
-					break;
-				case PUBLISH:
-					publish(req.getTopic(), msg, nodeID, nodeID);
+			case SUBSCRIBE:
+				subscribe(req.getTopic(), msg, nodeID, false);
+				break;
+			case UNSUBSCRIBE:
+				unsubscribe(req.getTopic(), msg, nodeID, false);
+				break;
+			case PUBLISH:
+				publish(req.getTopic(), msg, nodeID, false);
 			}
 		}
 	};
 
-	private void subscribe(byte[] topic, Message msg, Node nodeInterested) {
+	private void subscribe(byte[] topic, Message msg, Node nodeInterested, boolean isResponsible) {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 		Topic thisTopic = null;
-		
+
 		if(topics.containsKey(topicS)){
 			thisTopic = topics.get(topicS);
-	
+
 			if(!thisTopic.nodeExists(nodeInterested)) {
 				thisTopic.addNode(nodeInterested);
 			}
@@ -97,34 +97,36 @@ public class Dissemination extends GenericProtocol {
 			nodes.add(nodeInterested);
 			Topic t = new Topic(null, nodes);
 			topics.put(topicS, t);
-			routeMessage(topic, msg);
+			if(!isResponsible)
+				routeMessage(topic, msg);
 		}
 
 	}
 
-
-
-	private void unsubscribe(byte[] topic, Message msg, Node nodeInterested) {
+	private void unsubscribe(byte[] topic, Message msg, Node nodeInterested, boolean isResponsible) {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 		Topic thisTopic;
-		
+
 		if(topics.containsKey(topicS)){
 			thisTopic = topics.get(topicS);
 			int size = thisTopic.removeNode(nodeInterested);
 			if(size == 0) {
 				//sendUnsub to upstream
 				topics.remove(topicS);
-				DisseminationMessage m = new DisseminationMessage(topic, msg);
-				sendMessage(m, thisTopic.getUpStream().getMyself());
+				if(!isResponsible) {
+					DisseminationMessage m = new DisseminationMessage(topic, msg);
+					sendMessage(m, thisTopic.getUpStream().getMyself());
+				}
 			}
 		}
 		else {
-			routeMessage(topic, msg);
+			if(!isResponsible)
+				routeMessage(topic, msg);
 		}
 
 	}
 
-	private void publish(byte[] topic, Message msg, Node nodeInterested) {
+	private void publish(byte[] topic, Message msg, Node nodeInterested, boolean isResponsible) {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 
 		if(topics.containsKey(topicS)) {
@@ -141,18 +143,18 @@ public class Dissemination extends GenericProtocol {
 					sendMessage(msgOut, n.getMyself());
 				}
 			}
-			
+
 			Node upStream =  thisTopic.getUpStream();
-			if(upStream!= null && msg.getNodeSender() != upStream) {
+			if(!isResponsible && upStream!= null && msg.getNodeSender() != upStream) {
 				msg.setSender(nodeID);
 				DisseminationMessage msgOut = new DisseminationMessage(topic, msg);
-				
 				sendMessage(msgOut, upStream.getMyself());
 			}
-			
+
 		}
 		else {
-			routeMessage(topic, msg);
+			if(!isResponsible)
+				routeMessage(topic, msg);
 		}
 	}
 
@@ -170,65 +172,26 @@ public class Dissemination extends GenericProtocol {
 		}
 	}
 
-//	private ProtocolNotificationHandler uponRouteDelivery = new ProtocolNotificationHandler() {
-//		//TODO:
-//		@Override
-//		public void uponNotification(ProtocolNotification not) {
-//			RouteDelivery req = (RouteDelivery) not;
-//			Message m = req.getM();
-//
-//			String topicS = new String(m.getTopic(), StandardCharsets.UTF_8);
-//
-//			switch(m.getTypeM()) {
-//				case SUBSCRIBE:
-//					if(topics.containsKey(topicS)) {
-//						Topic thisTop = topics.get(topicS);
-//						thisTop.addNode(nodeID);
-//					}
-//					else {
-//						TreeSet<Node> nodes = new TreeSet<Node>();
-//						nodes.add(nodeID);
-//						Topic t = new Topic(null,nodes);
-//						topics.put(topicS, t);
-//					}
-//					break;
-//				case UNSUBSCRIBE:
-//					if(topics.containsKey(topicS)) {
-//						Topic t = topics.get(topicS);
-//						t.removeNode(nodeID);
-//					}
-//					else {
-//						Topic t = new Topic(null, new TreeSet<Node>());
-//						topics.put(topicS, t);
-//					}
-//					break;
-//				case PUBLISH:
-//					if(topics.containsKey(topicS)) {
-//						Topic thisTopic = topics.get(topicS);
-//
-//						boolean sendM = false;
-//						for(Node n: thisTopic.getNodes()) {
-//							if(n == nodeID) {
-//								sendM = true;
-//							}
-//							else {
-//								DisseminationMessage msgOut = new DisseminationMessage(m.topic, m);
-//								sendMessage(msgOut, n.getMyself());
-//							}
-//						}
-//						DisseminationMessage msgOut = new DisseminationMessage(m.topic, m);
-//						sendMessage(msgOut, thisTopic.getResponsible().getMyself());
-//
-//						if(sendM) {
-//							MessageDelivery notification = new MessageDelivery(m.topic, m);
-//							triggerNotification(notification);
-//						}
-//					}
-//					break;
-//
-//			}
-//		}
-//	};
+	private ProtocolNotificationHandler uponRouteDelivery = new ProtocolNotificationHandler() {
+		@Override
+		public void uponNotification(ProtocolNotification not) {
+			RouteDelivery req = (RouteDelivery) not;
+			Message m = req.getM();
+
+			switch(m.getTypeM()) {
+			case SUBSCRIBE:
+				subscribe(m.topic, m, m.getNodeInterested(), true);
+				break;
+			case UNSUBSCRIBE:
+				unsubscribe(m.topic, m, m.getNodeInterested(), true);
+				break;
+			case PUBLISH:
+				publish(m.topic, m, m.getNodeInterested(), true);
+				break;
+
+			}
+		}
+	};
 
 	private final ProtocolMessageHandler uponDisseminationMessage = new ProtocolMessageHandler() {
 		@Override
@@ -237,12 +200,12 @@ public class Dissemination extends GenericProtocol {
 			Message m = req.getPayload();
 
 			switch(m.getTypeM()) {
-				case UNSUBSCRIBE:
-					unsubscribe(m.topic, m, m.getNodeInterested());
-					break;
-				case PUBLISH:
-					publish(m.topic, m, m.getNodeInterested());
-					break;
+			case UNSUBSCRIBE:
+				unsubscribe(m.topic, m, m.getNodeInterested(), false);
+				break;
+			case PUBLISH:
+				publish(m.topic, m, m.getNodeInterested(), false);
+				break;
 			}
 
 
@@ -250,7 +213,6 @@ public class Dissemination extends GenericProtocol {
 	};
 
 	private ProtocolNotificationHandler uponRouteNotify = new ProtocolNotificationHandler() {
-		//TODO:
 		@Override
 		public void uponNotification(ProtocolNotification not) {
 			RouteNotify req = (RouteNotify) not;
@@ -261,19 +223,18 @@ public class Dissemination extends GenericProtocol {
 				Topic t = topics.get(topicS);
 				t.setUpStream(req.node);
 			}
-			switch(m.getTypeM()) {
+			else {
+				switch(m.getTypeM()) {
 				case SUBSCRIBE:
-					if(isUpStream == 0)
-						subscribe(m.topic, m);
+					subscribe(m.topic, m, m.getNodeInterested(), false);
 					break;
 				case UNSUBSCRIBE:
-					if(isUpStream == 0)
-						unsubscribe(m.topic, m);
+					unsubscribe(m.topic, m, m.getNodeInterested(), false);
 					break;
 				case PUBLISH:
-					if(isUpStream == 0)
-						publish(m.topic, m);
+					publish(m.topic, m, m.getNodeInterested(), false);
 					break;
+				}
 			}
 		}
 	};
