@@ -11,7 +11,7 @@ public class Message {
     byte[] message, topic;
     int typeM;
 	private Node nodeInterested;
-
+	private	Node nodeSender;
 
     public Message(byte[] message, int typeM, byte[] topic) {
         //   this.mid = UUID.randomUUID();
@@ -73,7 +73,7 @@ public class Message {
     }
 
 
-	public void setNode(Node nodeID) {
+	public void setNodeInterested(Node nodeID) {
 		nodeInterested = nodeID;
 	}
 
@@ -81,4 +81,15 @@ public class Message {
 	public Node getNodeInterested() {
 		return nodeInterested;
 	}
+
+
+	public void setSender(Node nodeID) {
+		nodeSender = nodeID;
+	}
+
+
+	public Node getNodeSender() {
+		return nodeSender;
+	}
+
 }
