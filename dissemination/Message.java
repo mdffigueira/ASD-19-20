@@ -4,10 +4,13 @@ import io.netty.buffer.ByteBuf;
 
 import java.util.UUID;
 
+import dht.Node;
+
 public class Message {
     // UUID mid;
     byte[] message, topic;
     int typeM;
+	private Node nodeInterested;
 
 
     public Message(byte[] message, int typeM, byte[] topic) {
@@ -68,4 +71,14 @@ public class Message {
             return Integer.BYTES;
         return Integer.BYTES+message.length+Integer.BYTES*2+topic.length;
     }
+
+
+	public void setNode(Node nodeID) {
+		nodeInterested = nodeID;
+	}
+
+
+	public Node getNodeInterested() {
+		return nodeInterested;
+	}
 }

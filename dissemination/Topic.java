@@ -6,21 +6,21 @@ import dht.Node;
 
 public class Topic {
 
-	Node responsibleNode;
+	Node upStream;
 	TreeSet<Node> nodes;
 
 	public Topic(Node resp) {
-		this.responsibleNode = resp;
+		this.upStream = resp;
 		this.nodes = new TreeSet<Node>();
 	}
 
 	public Topic(Node resp, TreeSet<Node> nodes) {
-		this.responsibleNode = resp;
+		this.upStream = resp;
 		this.nodes = nodes;
 	}
 
-	public Node getResponsible() {
-		return responsibleNode;
+	public Node getUpStream() {
+		return upStream;
 	}
 
 	public TreeSet<Node> getNodes(){
@@ -40,8 +40,8 @@ public class Topic {
 		return nodes.size();
 	}
 
-	public void setResponsible(Node nodeID) {
-		responsibleNode = nodeID;
+	public void setUpStream(Node nodeID) {
+		upStream = nodeID;
 	}
 
 

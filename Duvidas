@@ -1,6 +1,7 @@
 Duvidas:
-.O Scribe diz para o chord parar qunado encontra um node com o tema T?
+.O Scribe diz para o chord parar qunado encontra um node com o tema T? Sim, o scribe não manda a notificação ao chord para continuar.
+.O que é que um pai que perde a connecção com o filho faz? Route pelo chord para encontrar novo upstream
+.Porquê que o p/s fala diretamente com o dht? para descobrir se um topico é popular ou não
+.Quando o scribe conhece para quem mandar, quem é que trata de enviar? o DHT ou o scribe diretamente? É o scribe
+
 .Qual é o critério para defienir um topico como popular?
-.O que é que um pai que perde a connecção com o filho faz?
-.Porquê que o p/s fala diretamente com o dht?
-.Quando o scribe conhece para quem mandar, quem é que trata de enviar? o DHT ou o scribe diretamente?
