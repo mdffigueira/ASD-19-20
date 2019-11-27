@@ -31,6 +31,10 @@ public class DHT extends GenericProtocol implements INodeListener {
     private Node successor, predecessor;
     private Node nodeID;
     private int next = 0;
+    public final static int SUBSCRIBE = 1;
+    public final static int UNSUBSCRIBE = 2;
+    public final static int PUBLISH = 3;
+    public final static int POPULARITY =4;
 
     public DHT(INetwork net) throws HandlerRegistrationException {
         super("DHT", PROTOCOL_ID, net);
@@ -241,9 +245,12 @@ public class DHT extends GenericProtocol implements INodeListener {
             int msgId = req.getID();
             Message msg = req.getMsg();
             Node toSend = findSuccessor(msgId);
-            if (toSend.getId() != nodeID.getId()) {
+            if (toSend.getId() != nodeID.getId()&& msg.getTypeM()==POPULARITY) {
                 RouteMessage m = new RouteMessage(msgId, msg);
                 sendMessage(m, toSend.getMyself());
+            }
+
+            if (toSend.getId() != nodeID.getId()) {
                 RouteNotify deliverN = new RouteNotify(toSend, null,1);
                 triggerNotification(deliverN);
             } else {

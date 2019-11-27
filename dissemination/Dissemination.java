@@ -32,8 +32,9 @@ public class Dissemination extends GenericProtocol {
 	public final static int SUBSCRIBE = 1;
 	public final static int UNSUBSCRIBE = 2;
 	public final static int PUBLISH = 3;
+	public final static int POPULARITY =4;
 
-	private Map<String,Topic> topics;
+	private Map<Integer,Topic> topics;
 	Node nodeID;
 
 
@@ -52,7 +53,7 @@ public class Dissemination extends GenericProtocol {
 	}
 	@Override
 	public void init(Properties properties) {
-		this.topics = new HashMap<String, Topic>();
+		this.topics = new HashMap<Integer, Topic>();
 		this.nodeID = new Node(myself.hashCode(), myself);
 	}
 
@@ -66,22 +67,23 @@ public class Dissemination extends GenericProtocol {
 			Message msg = req.getMessage();
 			msg.setNodeInterested(nodeID);
 			msg.setSender(nodeID);
+			int msgId= msg.getTopic().hashCode();
 
 			switch(msg.getTypeM()) {
 			case SUBSCRIBE:
-				subscribe(req.getTopic(), msg, nodeID, false);
+				subscribe(msgId, msg, nodeID, false);
 				break;
 			case UNSUBSCRIBE:
-				unsubscribe(req.getTopic(), msg, nodeID, false);
+				unsubscribe(msgId, msg, nodeID, false);
 				break;
 			case PUBLISH:
-				publish(req.getTopic(), msg, nodeID, false);
+				publish(msgId, msg, nodeID, false);
 			}
 		}
 	};
 
-	private void subscribe(byte[] topic, Message msg, Node nodeInterested, boolean isResponsible) {
-		String topicS = new String(topic, StandardCharsets.UTF_8);
+	private void subscribe(int msgId, Message msg, Node nodeInterested, boolean isResponsible) {
+		Integer topicS = new String(msgId, StandardCharsets.UTF_8);
 		Topic thisTopic = null;
 
 		if(topics.containsKey(topicS)){
@@ -103,7 +105,7 @@ public class Dissemination extends GenericProtocol {
 
 	}
 
-	private void unsubscribe(byte[] topic, Message msg, Node nodeInterested, boolean isResponsible) {
+	private void unsubscribe(int msgId, Message msg, Node nodeInterested, boolean isResponsible) {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 		Topic thisTopic;
 
@@ -126,7 +128,7 @@ public class Dissemination extends GenericProtocol {
 
 	}
 
-	private void publish(byte[] topic, Message msg, Node nodeInterested, boolean isResponsible) {
+	private void publish(int msgId, Message msg, Node nodeInterested, boolean isResponsible) {
 		String topicS = new String(topic, StandardCharsets.UTF_8);
 
 		if(topics.containsKey(topicS)) {
@@ -213,6 +215,7 @@ public class Dissemination extends GenericProtocol {
 	};
 
 	private ProtocolNotificationHandler uponRouteNotify = new ProtocolNotificationHandler() {
+		//TODO:
 		@Override
 		public void uponNotification(ProtocolNotification not) {
 			RouteNotify req = (RouteNotify) not;

@@ -33,6 +33,7 @@ public class PublishSubscribe extends GenericProtocol {
     public final static int SUBSCRIBE = 1;
     public final static int UNSUBSCRIBE = 2;
     public final static int PUBLISH = 3;
+    public final static int POPULARITY =4;
     private boolean isGossip;
 
     //Set of Topics

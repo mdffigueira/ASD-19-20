@@ -8,10 +8,10 @@ import dht.Node;
 
 public class Message {
     // UUID mid;
-    byte[] message, topic;
-    int typeM;
-	private Node nodeInterested;
-	private	Node nodeSender;
+    private byte[] message, topic;
+    private int typeM;
+    private Node nodeInterested;
+    private Node nodeSender;
 
     public Message(byte[] message, int typeM, byte[] topic) {
         //   this.mid = UUID.randomUUID();
@@ -69,27 +69,27 @@ public class Message {
     public int serializedSize() {
         if (message == null)
             return Integer.BYTES;
-        return Integer.BYTES+message.length+Integer.BYTES*2+topic.length;
+        return Integer.BYTES + message.length + Integer.BYTES * 2 + topic.length;
     }
 
 
-	public void setNodeInterested(Node nodeID) {
-		nodeInterested = nodeID;
-	}
+    public void setNodeInterested(Node nodeID) {
+        nodeInterested = nodeID;
+    }
 
 
-	public Node getNodeInterested() {
-		return nodeInterested;
-	}
+    public Node getNodeInterested() {
+        return nodeInterested;
+    }
 
 
-	public void setSender(Node nodeID) {
-		nodeSender = nodeID;
-	}
+    public void setSender(Node nodeID) {
+        nodeSender = nodeID;
+    }
 
 
-	public Node getNodeSender() {
-		return nodeSender;
-	}
+    public Node getNodeSender() {
+        return nodeSender;
+    }
 
 }
