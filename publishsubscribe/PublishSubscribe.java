@@ -33,11 +33,11 @@ public class PublishSubscribe extends GenericProtocol {
     public final static int SUBSCRIBE = 1;
     public final static int UNSUBSCRIBE = 2;
     public final static int PUBLISH = 3;
-    public final static int POPULARITY =4;
+    public final static int POPULARITY = 4;
     private boolean isGossip;
 
     //Set of Topics
-    private Set<String> topics;
+    private Set<byte[]> topics;
 
     public PublishSubscribe(INetwork net) throws HandlerRegistrationException {
         super("Publish Subscribe", PROTOCOL_ID, net);
@@ -52,7 +52,7 @@ public class PublishSubscribe extends GenericProtocol {
         //Notifications Produced
         registerNotification(PSDeliver.NOTIFICATION_ID, PSDeliver.NOTIFICATION_NAME);
         registerNotificationHandler(MessageDelivery.NOTIFICATION_ID, uponMessageDelivery);
-        
+
         registerNotificationHandler(FloodBCastDeliver.NOTIFICATION_ID, uponFloodBCastDeliver);
     }
 
@@ -73,7 +73,7 @@ public class PublishSubscribe extends GenericProtocol {
 
             //GOSSIP
             if (isGossip) {
-                String topic = new String(req.getTopic(), StandardCharsets.UTF_8);
+                byte[] topic = req.getTopic();
                 topics.add(topic);
             }
 
@@ -93,7 +93,7 @@ public class PublishSubscribe extends GenericProtocol {
 
             //GOSSIP
             if (isGossip) {
-                String topic = new String(req.getTopic(), StandardCharsets.UTF_8);
+                byte[] topic = req.getTopic();
                 topics.remove(topic);
             } else {
                 disseminateRequest(req.getTopic(), null, UNSUBSCRIBE);
@@ -129,8 +129,7 @@ public class PublishSubscribe extends GenericProtocol {
     };
 
     private void disseminateRequest(byte[] top, byte[] m, int typeM) {
-        String topic = new String(top, StandardCharsets.UTF_8);
-    	Message message = new Message(m, typeM,top);
+        Message message = new Message(top, m, typeM);
         DisseminateRequest dissReq = new DisseminateRequest(top, message);
         dissReq.setDestination(Dissemination.PROTOCOL_ID);
 
@@ -154,14 +153,14 @@ public class PublishSubscribe extends GenericProtocol {
             }
         }
     };
-    
+
     private ProtocolNotificationHandler uponMessageDelivery = new ProtocolNotificationHandler() {
 
         @Override
         public void uponNotification(ProtocolNotification not) {
             MessageDelivery req = (MessageDelivery) not;
             PSDeliver deliver = new PSDeliver(req.getTopic(), req.getMessageBody());
-                triggerNotification(deliver);
+            triggerNotification(deliver);
         }
     };
 }

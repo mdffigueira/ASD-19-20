@@ -13,7 +13,7 @@ public class Message {
     private Node nodeInterested;
     private Node nodeSender;
 
-    public Message(byte[] message, int typeM, byte[] topic) {
+    public Message(byte[] topic, byte[] message, int typeM) {
         //   this.mid = UUID.randomUUID();
         this.message = message;
         this.typeM = typeM;
@@ -21,7 +21,11 @@ public class Message {
 
     }
 
-
+    public Message(byte[] topic, int typeM) {
+        this.topic = topic;
+        this.typeM = typeM;
+        this.message = null;
+    }
 //    public UUID getMid() {
 //        return mid;
 //
@@ -55,7 +59,7 @@ public class Message {
     public static Message deserialize(ByteBuf byteBuf) {
         int msgSize = byteBuf.readInt();
         if (msgSize == 0) {
-            return new Message(null, 0, null);
+            return new Message(null,0);
         }
         byte[] msg = new byte[msgSize];
         byteBuf.readBytes(msg);
@@ -63,7 +67,7 @@ public class Message {
         int topSize = byteBuf.readInt();
         byte[] top = new byte[topSize];
         byteBuf.readBytes(top);
-        return new Message(msg, typ, top);
+        return new Message(top,msg, typ);
     }
 
     public int serializedSize() {
