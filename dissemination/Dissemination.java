@@ -73,7 +73,7 @@ public class Dissemination extends GenericProtocol {
             switch (msg.getTypeM()) {
                 case SUBSCRIBE:
                     subscribe(msgId, msg, null, false);
-                    break;
+                    break; 
                 case UNSUBSCRIBE:
                     unsubscribe(msgId, msg, false);
                     break;
