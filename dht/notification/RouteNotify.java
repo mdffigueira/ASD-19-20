@@ -44,7 +44,7 @@ public class RouteNotify extends ProtocolNotification {
     @Override
     public String toString() {
         return "RouteNotifyNotification{" +
-                "node=" + node + "isUpStream=" + isUpStream +
+                "upstream=" + upStream + "isUpStream=" + isUpStream +
                 '}';
     }
 
