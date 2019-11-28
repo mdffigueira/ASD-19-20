@@ -237,7 +237,7 @@ public class DHT extends GenericProtocol implements INodeListener {
             }
 
         }
-    };    }
+    };
 
 //	public Topic(Node resp, TreeSet<Node> nodes) {
 //		this.upStream = resp;
@@ -250,15 +250,25 @@ public class DHT extends GenericProtocol implements INodeListener {
             int msgId = req.getID();
             Message msg = req.getMsg();
             Node toSend = findSuccessor(msgId);
+            if(req.getHasUpStream()==0){
+                if(toSend.getId()!=nodeID.getId()) {
+                    RouteNotify deliverN = new RouteNotify(msgId,toSend, msg, 0);
+                    triggerNotification(deliverN);
+                    RouteMessage m = new RouteMessage(msgId, msg);
+                    sendMessage(m, toSend.getMyself());
+                }
+            }
+
             if (toSend.getId() != nodeID.getId() && msg.getTypeM() == POPULARITY) {
                 RouteMessage m = new RouteMessage(msgId, msg);
                 sendMessage(m, toSend.getMyself());
             }
             else if (toSend.getId() != nodeID.getId()) {
+                msg.setSender(nodeID);
                 RouteMessage m = new RouteMessage(msgId, msg);
                 sendMessage(m, toSend.getMyself());
-                RouteNotify deliverN = new RouteNotify(toSend,msg);
-                triggerNotification(deliverN);
+               // RouteNotify deliverN = new RouteNotify(msgId,toSend,msg,1);
+                //triggerNotification(deliverN);
             } else {
                 RouteDelivery routeDelivery = new RouteDelivery(msgId, msg);
                 triggerNotification(routeDelivery);
@@ -273,14 +283,11 @@ public class DHT extends GenericProtocol implements INodeListener {
         @Override
         public void receive(ProtocolMessage protocolMessage) {
             RouteMessage req = (RouteMessage) protocolMessage;
-            int msgId = req.getNId();
+            int msgId = req.getMsgId();
             Message msg = req.getMessage();
-
             Node toSend = findSuccessor(msgId);
             if (toSend.getId() != nodeID.getId()) {
-                RouteMessage m = new RouteMessage(msgId, msg);
-                sendMessage(m, toSend.getMyself());
-                RouteNotify deliverN = new RouteNotify(toSend, msg, 0);
+                RouteNotify deliverN = new RouteNotify(msgId,toSend, msg, 0);
                 triggerNotification(deliverN);
             } else {
                 RouteDelivery routeDelivery = new RouteDelivery(msgId, msg);

@@ -15,44 +15,42 @@ public class DisseminationMessage extends ProtocolMessage {
 
 	public final static short MSG_CODE = 908;
 
-	private Message payload;
-	private byte[] topic;
+	private Message msg;
+	private int msgId;
 	
-	public DisseminationMessage(byte[] topic,Message msg) {
+	public DisseminationMessage(int msgId,Message msg) {
 		super(DisseminationMessage.MSG_CODE);
-		this.payload = msg;
-		this.topic = topic;
+		this.msg = msg;
+		this.msgId = msgId;
 
 
 	}
 	
-	public Message getPayload() {
-		return this.payload;
+	public Message getMsg() {
+		return this.msg;
 	}
 	public static final ISerializer<DisseminationMessage> serializer = new ISerializer<DisseminationMessage>() {
 		@Override
 		public void serialize(DisseminationMessage m, ByteBuf out) {
-			m.payload.serialize(out);
-			out.writeInt(m.topic.length);
-			out.writeBytes(m.topic);
+			m.msg.serialize(out);
+			out.writeInt(m.msgId);
 		}
 
 		@Override
 		public DisseminationMessage deserialize(ByteBuf in) throws UnknownHostException {
 			Message thisMsg = Message.deserialize(in);
-			byte[] topic = new byte[in.readInt()];
-			in.readBytes(topic);
-			return new DisseminationMessage( topic, thisMsg);
+			int msgID = in.readInt();
+			return new DisseminationMessage( msgID, thisMsg);
 		}
 
 		@Override
 		public int serializedSize(DisseminationMessage m) {
-			return m.payload.serializedSize() + Integer.BYTES + m.topic.length;
+			return m.msg.serializedSize() + Integer.BYTES;
 		}
 	};
 
 
-	public byte[] getTopic() {
-		return topic;
+	public int  getMsgId() {
+		return msgId;
 	}
 }

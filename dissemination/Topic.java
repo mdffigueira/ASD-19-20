@@ -6,8 +6,8 @@ import dht.Node;
 
 public class Topic {
 
-	Node upStream;
-	TreeSet<Node> nodes;
+	private Node upStream;
+	private TreeSet<Node> nodes;
 
 	public Topic(Node resp) {
 		this.upStream = resp;

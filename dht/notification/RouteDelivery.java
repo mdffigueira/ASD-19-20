@@ -9,26 +9,26 @@ public class RouteDelivery extends ProtocolNotification {
     public final static short NOTIFICATION_ID = 101;
     public final static String NOTIFICATION_NAME = "node";
 
-    public final int node;
-    Message m;
+    private final int msgId;
+    private Message msg;
 
-    public RouteDelivery(int n , Message m ) {
+    public RouteDelivery(int msgId , Message m ) {
         super(RouteDelivery.NOTIFICATION_ID, RouteDelivery.NOTIFICATION_NAME);
-        this.node = n;
-        this.m = m;
+        this.msgId = msgId;
+        this.msg = msg;
     }
 
-    public int getNode() {
-        return node;
+    public int getMsgId() {
+        return msgId;
     }
 
-    public Message getM(){
-        return m;
+    public Message getMsg(){
+        return msg;
     }
     @Override
     public String toString() {
         return "RouteDeliveryNotification{" +
-                "node=" + node +
+                "message id=" + msgId +
                 '}';
     }
 }

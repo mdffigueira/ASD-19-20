@@ -11,18 +11,18 @@ import java.net.UnknownHostException;
 
 public class RouteMessage extends ProtocolMessage {
     public final static short MSG_CODE = 807;
-    int nId;
-    Message message;
+    private int msgId;
+    private Message message;
 
-    public RouteMessage(int nId, Message message) {
+    public RouteMessage(int msgId, Message message) {
         super(RouteMessage.MSG_CODE);
-        this.nId = nId;
+        this.msgId = msgId;
         this.message = message;
 
     }
 
-    public int getNId() {
-        return nId;
+    public int getMsgId() {
+        return msgId;
     }
 
     public Message getMessage() {
@@ -32,7 +32,7 @@ public class RouteMessage extends ProtocolMessage {
     public static final ISerializer<RouteMessage> serializer = new ISerializer<RouteMessage>() {
         @Override
         public void serialize(RouteMessage routeMessage, ByteBuf byteBuf) {
-            byteBuf.writeInt(routeMessage.nId);
+            byteBuf.writeInt(routeMessage.msgId);
             routeMessage.message.serialize(byteBuf);
         }
 

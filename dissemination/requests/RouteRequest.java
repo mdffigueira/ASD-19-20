@@ -10,12 +10,14 @@ public class RouteRequest extends ProtocolRequest {
 
     private int id;
     private Message message;
+    int hasUpStream;
     
 
-    public RouteRequest(int id, Message msg) {
+    public RouteRequest(int id, Message msg,int hasUpStream) {
         super(RouteRequest.REQUEST_ID);
         this.id = id;
         this.message = msg;
+        this.hasUpStream=hasUpStream;
     }
 
 	public int getID() {
@@ -25,4 +27,7 @@ public class RouteRequest extends ProtocolRequest {
 	public Message getMsg() {
 		return message;
 	}
+	public int getHasUpStream(){
+        return hasUpStream;
+    }
 }
