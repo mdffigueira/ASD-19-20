@@ -9,7 +9,7 @@ import floodbcast.delivers.FloodBCastDeliver;
 import floodbcast.requests.FloodBCastRequest;
 import hyparview.HyParViewMembership;
 import network.INetwork;
-import publishsubscribe.PublishSubscribe;
+import publishsubscribe.PublishSubscribe2;
 import publishsubscribe.delivers.PSDeliver;
 import publishsubscribe.requests.PSPublishRequest;
 import publishsubscribe.requests.PSSubscribeRequest;

@@ -21,4 +21,8 @@ public class PSSubscribeRequest extends ProtocolRequest {
 	public byte[] getTopic() {
 		return topic;
 	}
+
+	public byte[] getMessage() {
+		return message;
+	}
 }

@@ -5,4 +5,27 @@ Duvidas:
 .Quando o scribe conhece para quem mandar, quem é que trata de enviar? o DHT ou o scribe diretamente? É o scribe
 
 .Qual é o critério para defienir um topico como popular?
-é suposto fazer o que o gajo que é o responsável por um topico? guardar todas as  mensagens desse topico e sempre que algué faz register manda de volta?(dont think soo)
+é suposto fazer com que o gajo que é o responsável por um topico? guardar todas as  mensagens desse topico e sempre que algué faz register manda de volta?(dont think soo)
+
+
+
+
+____________________________________________________________________________________
+
+Está a faltar para a fase 2:
+	fault tolerance:
+		Timeouts:
+			Se o upstream nao fala com o nó há muito tempo, entao tentamos comunicar com ele (sideMessage como no flood??):
+				se devolve resposta - reset ao timer!? do timeout
+				se nao mandar novo subscribe para o dht (routing) atualizamos o upstream
+			Se um no interessado já nao comunica há muito tempo, tentamos comunicar:
+				se devolve resposta - reset ao timer + mantem
+				se nao: drop da children (basicamente unsub)
+				
+	colocar a logica do calculo de popularidade de um topico no PS, DHT ou no Scribe
+	terminar as mensagens no PublishSubscribe para que ele consiga receber o RouteDelivery e mandar para o PS original e assim enviar por fim a mensagem atraves do flood ou do scribe
+	
+____________________________________________________________________________________
+
+Está a faltar para a fase 3:
+ 
