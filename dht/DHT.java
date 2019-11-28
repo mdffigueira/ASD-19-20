@@ -32,7 +32,6 @@ public class DHT extends GenericProtocol implements INodeListener {
     private Node nodeID;
     private int next = 0;
     public final static int SUBSCRIBE = 1;
-    public final static int UNSUBSCRIBE = 2;
     public final static int PUBLISH = 3;
     public final static int POPULARITY = 4;
 
@@ -239,10 +238,6 @@ public class DHT extends GenericProtocol implements INodeListener {
         }
     };
 
-//	public Topic(Node resp, TreeSet<Node> nodes) {
-//		this.upStream = resp;
-//		//this.nodes = nodes;
-//	}
     private final ProtocolRequestHandler uponRouteRequest = new ProtocolRequestHandler() {
         @Override
         public void uponRequest(ProtocolRequest protocolRequest) {
@@ -250,32 +245,46 @@ public class DHT extends GenericProtocol implements INodeListener {
             int msgId = req.getID();
             Message msg = req.getMsg();
             Node toSend = findSuccessor(msgId);
-            if(req.getHasUpStream()==0){
-                if(toSend.getId()!=nodeID.getId()) {
-                    RouteNotify deliverN = new RouteNotify(msgId,toSend, msg, 0);
-                    triggerNotification(deliverN);
-                    RouteMessage m = new RouteMessage(msgId, msg);
-                    sendMessage(m, toSend.getMyself());
-                }
+            RouteDelivery routeDelivery;
+            RouteMessage routeMessage;
+            switch (msg.getTypeM()) {
+                case PUBLISH:
+                    if (toSend.getMyself() == myself) {
+                        routeDelivery = new RouteDelivery(msgId, msg);
+                        triggerNotification(routeDelivery);
+                    } else {
+                        //msg.setSender();//todo not sure se é preciso
+                        routeMessage = new RouteMessage(msgId, msg);
+                        sendMessage(routeMessage, toSend.getMyself());
+                    }
+                    break;
+                case SUBSCRIBE:
+                    if (req.getHasUpStream() == 0) {
+                        if (toSend.getId() != nodeID.getId()) {
+                            RouteNotify deliverN = new RouteNotify(msgId, toSend, msg, 0);
+                            triggerNotification(deliverN);
+                            routeMessage = new RouteMessage(msgId, msg);
+                            sendMessage(routeMessage, toSend.getMyself());
+                        }
+                    } else if (toSend.getId() != nodeID.getId()) {
+                        msg.setSender(nodeID);
+                        routeMessage = new RouteMessage(msgId, msg);
+                        sendMessage(routeMessage, toSend.getMyself());
+                        // RouteNotify deliverN = new RouteNotify(msgId,toSend,msg,1);
+                        //triggerNotification(deliverN);
+                    } else {
+                        routeDelivery = new RouteDelivery(msgId, msg);
+                        triggerNotification(routeDelivery);
+                    }
+                case POPULARITY:
+                    if (toSend.getId() != nodeID.getId()) {
+                        routeMessage = new RouteMessage(msgId, msg);
+                        sendMessage(routeMessage, toSend.getMyself());
+                    } else {
+                        routeDelivery = new RouteDelivery(msgId, msg);
+                        triggerNotification(routeDelivery);
+                    }
             }
-
-            if (toSend.getId() != nodeID.getId() && msg.getTypeM() == POPULARITY) {
-                RouteMessage m = new RouteMessage(msgId, msg);
-                sendMessage(m, toSend.getMyself());
-            }
-            else if (toSend.getId() != nodeID.getId()) {
-                msg.setSender(nodeID);
-                RouteMessage m = new RouteMessage(msgId, msg);
-                sendMessage(m, toSend.getMyself());
-               // RouteNotify deliverN = new RouteNotify(msgId,toSend,msg,1);
-                //triggerNotification(deliverN);
-            } else {
-                RouteDelivery routeDelivery = new RouteDelivery(msgId, msg);
-                triggerNotification(routeDelivery);
-            }
-            // Node ID= req.getId();
-            // int T = req.get
-
         }
     };
 
@@ -287,7 +296,7 @@ public class DHT extends GenericProtocol implements INodeListener {
             Message msg = req.getMessage();
             Node toSend = findSuccessor(msgId);
             if (toSend.getId() != nodeID.getId()) {
-                RouteNotify deliverN = new RouteNotify(msgId,toSend, msg, 0);
+                RouteNotify deliverN = new RouteNotify(msgId, toSend, msg, 0);
                 triggerNotification(deliverN);
             } else {
                 RouteDelivery routeDelivery = new RouteDelivery(msgId, msg);

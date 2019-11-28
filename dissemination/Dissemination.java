@@ -54,7 +54,7 @@ public class Dissemination extends GenericProtocol {
 
     @Override
     public void init(Properties properties) {
-        this.topics = new HashMap<Integer, Topic>();
+        this.topics = new HashMap<>();
         this.nodeID = new Node(myself.hashCode(), myself);
     }
 
@@ -75,10 +75,10 @@ public class Dissemination extends GenericProtocol {
                     subscribe(msgId, msg, null, false);
                     break; 
                 case UNSUBSCRIBE:
-                    unsubscribe(msgId, msg, false);
+                    unsubscribe(msgId, msg);
                     break;
                 case PUBLISH:
-                    publish(msgId, msg, nodeID, false);
+                    publish(msgId, msg, false);
             }
         }
     };
@@ -103,7 +103,7 @@ public class Dissemination extends GenericProtocol {
 
     }
 
-    private void unsubscribe(int msgId, Message msg, boolean isResponsible) {
+    private void unsubscribe(int msgId, Message msg/*, boolean isResponsible*/) {
 
         if (topics.containsKey(msgId)) {
             Node upStream = topics.get(msgId).getUpStream();
@@ -120,25 +120,25 @@ public class Dissemination extends GenericProtocol {
             }
 
         } else {
-            if (!isResponsible)
-                routeRequest(msgId, msg);
+        	//Todo acho que nao faz sentido fazer route request de um unsubscribe....
+            //if (!isResponsible)
+                //routeRequest(msgId, msg);
         }
 
     }
 
-    private void publish(int msgId, Message msg, Node nodeInterested, boolean isResponsible) {
-        String topicS = new String(topic, StandardCharsets.UTF_8);
+    private void publish(int msgId, Message msg, boolean isResponsible) {
 
-        if (topics.containsKey(topicS)) {
-            Topic thisTopic = topics.get(topicS);
+        if (topics.containsKey(msgId)) {
+            Topic thisTopic = topics.get(msgId);
 
             for (Node n : thisTopic.getNodes()) {
-                if (n == nodeID) {
-                    MessageDelivery notification = new MessageDelivery(topic, msg);
+                if (n.getId() == nodeID.getId()) {
+                    MessageDelivery notification = new MessageDelivery(msgId, msg);
                     triggerNotification(notification);
                 } else if (n != msg.getNodeSender()) {
                     msg.setSender(nodeID);
-                    DisseminationMessage msgOut = new DisseminationMessage(topic, msg);
+                    DisseminationMessage msgOut = new DisseminationMessage(msgId, msg);
                     sendMessage(msgOut, n.getMyself());
                 }
             }
@@ -146,13 +146,13 @@ public class Dissemination extends GenericProtocol {
             Node upStream = thisTopic.getUpStream();
             if (!isResponsible && upStream != null && msg.getNodeSender() != upStream) {
                 msg.setSender(nodeID);
-                DisseminationMessage msgOut = new DisseminationMessage(topic, msg);
+                DisseminationMessage msgOut = new DisseminationMessage(msgId, msg);
                 sendMessage(msgOut, upStream.getMyself());
             }
 
         } else {
             if (!isResponsible)
-                routeRequest(topic, msg);
+                routeRequest(msgId, msg,0);
         }
     }
 
@@ -178,11 +178,8 @@ public class Dissemination extends GenericProtocol {
                 case SUBSCRIBE:
                     subscribe(msgId, msg, null, true);
                     break;
-                case UNSUBSCRIBE:
-                    unsubscribe(m.topic, m, m.getNodeInterested(), true);
-                    break;
                 case PUBLISH:
-                    publish(m.topic, m, m.getNodeInterested(), true);
+                    publish(msgId, msg,  true);
                     break;
 
             }
@@ -193,14 +190,15 @@ public class Dissemination extends GenericProtocol {
         @Override
         public void receive(ProtocolMessage protocolMessage) {
             DisseminationMessage req = (DisseminationMessage) protocolMessage;
-            Message m = req.getPayload();
+            Message msg = req.getMsg();
+            int msgId=req.getMsgId();
 
-            switch (m.getTypeM()) {
+            switch (msg.getTypeM()) {
                 case UNSUBSCRIBE:
-                    unsubscribe(m.topic, m, m.getNodeInterested(), false);
+                    unsubscribe(msgId, msg);
                     break;
                 case PUBLISH:
-                    publish(m.topic, m, m.getNodeInterested(), false);
+                    publish(msgId, msg, false);
                     break;
             }
 
@@ -220,14 +218,10 @@ public class Dissemination extends GenericProtocol {
                 case SUBSCRIBE:
                     subscribe(msgID, msg, upStream, false);
                     break;
-                case UNSUBSCRIBE:
-                    unsubscribe(msgID, msg, false);
-                    break;
                 case PUBLISH:
-                    publish(m.topic, m, m.getNodeInterested(), false);
+                    publish(msgID,msg, false);
                     break;
 
-//                }
             }
         }
     };

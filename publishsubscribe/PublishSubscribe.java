@@ -160,7 +160,7 @@ public class PublishSubscribe extends GenericProtocol {
         @Override
         public void uponNotification(ProtocolNotification not) {
             MessageDelivery req = (MessageDelivery) not;
-            PSDeliver deliver = new PSDeliver(req.getTopic(), req.getMessageBody());
+            PSDeliver deliver = new PSDeliver(req.getMessage().getTopic(), req.getMessage().getMessage());
             triggerNotification(deliver);
         }
     };

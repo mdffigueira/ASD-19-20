@@ -12,7 +12,7 @@ public class RouteDelivery extends ProtocolNotification {
     private final int msgId;
     private Message msg;
 
-    public RouteDelivery(int msgId , Message m ) {
+    public RouteDelivery(int msgId , Message msg ) {
         super(RouteDelivery.NOTIFICATION_ID, RouteDelivery.NOTIFICATION_NAME);
         this.msgId = msgId;
         this.msg = msg;
@@ -25,6 +25,7 @@ public class RouteDelivery extends ProtocolNotification {
     public Message getMsg(){
         return msg;
     }
+
     @Override
     public String toString() {
         return "RouteDeliveryNotification{" +

@@ -9,28 +9,20 @@ public class MessageDelivery extends ProtocolNotification {
     public static final String NOTIFICATION_NAME = "MessageDelivery";
 
     private Message message;
-    private byte[] topic;
+    private int msgId;
 
-    public MessageDelivery(byte[] topic, Message msg) {
+    public MessageDelivery(int msgId, Message msg) {
         super(MessageDelivery.NOTIFICATION_ID, MessageDelivery.NOTIFICATION_NAME);
         message = msg;
-        if(topic != null) {
-            this.topic = new byte[topic.length];
-            System.arraycopy(topic, 0, this.topic, 0, topic.length);
-        } else {
-            this.topic = new byte[0];
-        }
+        this.msgId = msgId;
+
     }
 
     public Message getMessage() {
         return message;
     }
-    
-    public byte[] getMessageBody() {
-        return message.getMessage();
-    }
-    
-    public byte[] getTopic() {
-    	return topic;
-    }
+
+   public int getMsgId(){
+        return msgId;
+   }
 }
