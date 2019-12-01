@@ -34,10 +34,6 @@ public class FloodBCastProtocolMessage extends ProtocolMessage {
         this.topic = topic;
     }
 
-//    public void setPayload(byte[] payload) {
-//        this.payload = new byte[payload.length];
-//        System.arraycopy(payload, 0, this.payload, 0, payload.length);
-//    }
 public Host getOwner(){return owner;}
     public int getLength() {
         return this.payload.length;

@@ -13,12 +13,20 @@ public class RouteDelivery extends ProtocolNotification {
     private int popular;
     private Message msg;
 
-    public RouteDelivery(int msgId , Message msg ) {
+    public RouteDelivery(int msgId , Message msg) {
         super(RouteDelivery.NOTIFICATION_ID, RouteDelivery.NOTIFICATION_NAME);
         this.msgId = msgId;
         this.msg = msg;
         this.popular = 0;
     }
+    
+    public RouteDelivery(int msgId , Message msg, int pop) {
+        super(RouteDelivery.NOTIFICATION_ID, RouteDelivery.NOTIFICATION_NAME);
+        this.msgId = msgId;
+        this.msg = msg;
+        this.popular = pop;
+    }
+
 
     public int getMsgId() {
         return msgId;
