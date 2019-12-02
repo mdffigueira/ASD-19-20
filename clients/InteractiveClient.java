@@ -8,7 +8,7 @@ import floodbcast.delivers.FloodBCastDeliver;
 import floodbcast.requests.FloodBCastRequest;
 import hyparview.HyParViewMembership;
 import network.INetwork;
-import publishsubscribe.PublishSubscribe2;
+import publishsubscribe.PublishSubscribe;
 import publishsubscribe.delivers.PSDeliver;
 import publishsubscribe.requests.PSPublishRequest;
 import publishsubscribe.requests.PSSubscribeRequest;
@@ -39,7 +39,7 @@ public class InteractiveClient implements INotificationConsumer {
 		FloodBCast bCast = new FloodBCast(net);
 		bCast.init(configProps);
 		
-	    PublishSubscribe2 ps = new PublishSubscribe2(net);
+	    PublishSubscribe ps = new PublishSubscribe(net);
 	    ps.init(configProps);
 
 
