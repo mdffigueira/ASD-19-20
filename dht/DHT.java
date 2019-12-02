@@ -263,8 +263,8 @@ public class DHT extends GenericProtocol implements INodeListener {
                         if (toSend.getId() != nodeID.getId()) {
                             RouteNotify deliverN = new RouteNotify(msgId, toSend, msg, 0);
                             triggerNotification(deliverN);
-                            routeMessage = new RouteMessage(msgId, msg);
-                            sendMessage(routeMessage, toSend.getMyself());
+                          //  routeMessage = new RouteMessage(msgId, msg);
+                          //  sendMessage(routeMessage, toSend.getMyself());
                         }
                     } else if (toSend.getId() != nodeID.getId()) {
                         msg.setSender(nodeID);
@@ -302,8 +302,6 @@ public class DHT extends GenericProtocol implements INodeListener {
                 RouteDelivery routeDelivery = new RouteDelivery(msgId, msg);
                 triggerNotification(routeDelivery);
             }
-
-
         }
     };
 

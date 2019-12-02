@@ -38,7 +38,7 @@ public class PublishSubscribe extends GenericProtocol {
 
     //Set of Topics
     private Set<byte[]> topics;
-
+    @SuppressWarnings("deprecation")
     public PublishSubscribe(INetwork net) throws HandlerRegistrationException {
         super("Publish Subscribe", PROTOCOL_ID, net);
 
