@@ -36,6 +36,7 @@ public class PublishSubscribe extends GenericProtocol {
 	public final static int SUBSCRIBE = 1;
 	public final static int UNSUBSCRIBE = 2;
 	public final static int PUBLISH = 3;
+	public final static int POPULARITY = 4;
 
 	//Set of Topics
 	private Set<byte[]> topics;
@@ -130,7 +131,7 @@ public class PublishSubscribe extends GenericProtocol {
 		public void uponRequest(ProtocolRequest r) {
 			PSPublishRequest req = (PSPublishRequest) r;
 			byte[] topic = req.getTopic();
-			Message message = new Message(topic, req.getMessage() , PUBLISH);
+			Message message = new Message(topic, req.getMessage() , POPULARITY);
 			RouteRequest routeReq = new RouteRequest(topic.hashCode(), message, 0);
 			routeReq.setDestination(DHT.PROTOCOL_ID);
 			try {
