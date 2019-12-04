@@ -81,13 +81,15 @@ public class PublishSubscribe extends GenericProtocol {
 		@Override
 		public void uponNotification(ProtocolNotification not) {
 			RouteDelivery req = (RouteDelivery) not;
-			Message msg = req.getMsg();
-			int popular = req.isPopular();
-			if(popular == 0) {
-				disseminateRequest(msg.getTopic(), msg.getMessage(), msg.getTypeM());
-			}
-			else {
-				sendToFlood(msg);
+			if(PROTOCOL_ID == req.getProtocolId()) {
+				Message msg = req.getMsg();
+				int popular = req.isPopular();
+				if(popular == 0) {
+					disseminateRequest(msg.getTopic(), msg.getMessage(), msg.getTypeM());
+				}
+				else {
+					sendToFlood(msg);
+				}
 			}
 		}
 	};

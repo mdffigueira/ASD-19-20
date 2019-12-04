@@ -14,11 +14,14 @@ import dht.notification.*;
 import dht.notification.RouteDelivery;
 import dht.timers.FixFingerTimer;
 import dht.timers.StabilizeTimer;
+import dissemination.Dissemination;
 import dissemination.Message;
 import dissemination.requests.RouteRequest;
 import network.Host;
 import network.INetwork;
 import network.INodeListener;
+import publishsubscribe.PublishSubscribe;
+
 import org.apache.logging.log4j.core.appender.routing.Route;
 
 import java.net.InetAddress;
@@ -250,7 +253,7 @@ public class DHT extends GenericProtocol implements INodeListener {
             switch (msg.getTypeM()) {
                 case PUBLISH:
                     if (toSend.getMyself() == myself) {
-                        routeDelivery = new RouteDelivery(msgId, msg);
+                        routeDelivery = new RouteDelivery(msgId, msg,Dissemination.PROTOCOL_ID);
                         triggerNotification(routeDelivery);
                     } else {
                         //msg.setSender();//todo not sure se é preciso
@@ -273,7 +276,7 @@ public class DHT extends GenericProtocol implements INodeListener {
                         // RouteNotify deliverN = new RouteNotify(msgId,toSend,msg,1);
                         //triggerNotification(deliverN);
                     } else {
-                        routeDelivery = new RouteDelivery(msgId, msg);
+                        routeDelivery = new RouteDelivery(msgId, msg,Dissemination.PROTOCOL_ID);
                         triggerNotification(routeDelivery);
                     }
                 case POPULARITY:
@@ -281,7 +284,7 @@ public class DHT extends GenericProtocol implements INodeListener {
                         routeMessage = new RouteMessage(msgId, msg);
                         sendMessage(routeMessage, toSend.getMyself());
                     } else {
-                        routeDelivery = new RouteDelivery(msgId, msg);
+                        routeDelivery = new RouteDelivery(msgId, msg,PublishSubscribe.PROTOCOL_ID);
                         triggerNotification(routeDelivery);
                     }
             }
@@ -299,7 +302,7 @@ public class DHT extends GenericProtocol implements INodeListener {
                 RouteNotify deliverN = new RouteNotify(msgId, toSend, msg, 0);
                 triggerNotification(deliverN);
             } else {
-                RouteDelivery routeDelivery = new RouteDelivery(msgId, msg);
+                RouteDelivery routeDelivery = new RouteDelivery(msgId, msg,Dissemination.PROTOCOL_ID);
                 triggerNotification(routeDelivery);
             }
         }

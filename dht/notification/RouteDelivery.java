@@ -12,19 +12,22 @@ public class RouteDelivery extends ProtocolNotification {
     private final int msgId;
     private int popular;
     private Message msg;
+    private int protocolId;
 
-    public RouteDelivery(int msgId , Message msg) {
+    public RouteDelivery(int msgId , Message msg, int idProt) {
         super(RouteDelivery.NOTIFICATION_ID, RouteDelivery.NOTIFICATION_NAME);
         this.msgId = msgId;
         this.msg = msg;
         this.popular = 0;
+        this.protocolId = idProt;
     }
     
-    public RouteDelivery(int msgId , Message msg, int pop) {
+    public RouteDelivery(int msgId , Message msg, int idProt, int pop) {
         super(RouteDelivery.NOTIFICATION_ID, RouteDelivery.NOTIFICATION_NAME);
         this.msgId = msgId;
         this.msg = msg;
         this.popular = pop;
+        this.protocolId = idProt;
     }
 
 
@@ -45,5 +48,9 @@ public class RouteDelivery extends ProtocolNotification {
 
 	public int isPopular() {
 		return popular;
+	}
+	
+	public int getProtocolId() {
+		return protocolId;
 	}
 }
