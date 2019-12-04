@@ -22,7 +22,6 @@ import network.INetwork;
 import network.INodeListener;
 import publishsubscribe.PublishSubscribe;
 
-import org.apache.logging.log4j.core.appender.routing.Route;
 
 import java.net.InetAddress;
 import java.util.Properties;
@@ -43,13 +42,15 @@ public class DHT extends GenericProtocol implements INodeListener {
         //messages
         registerMessageHandler(FindSuccessorMessage.MSG_CODE, uponFindSuccessorMessage, FindSuccessorMessage.serializer);
         registerMessageHandler(FindSuccessorResponseMessage.MSG_CODE, uponFindSuccessorResponseMessage, FindSuccessorResponseMessage.serializer);
-
         registerMessageHandler(FindSuccessorPredecessorMessage.MSG_CODE, uponFindSuccessorPredecessorMessage, FindSuccessorPredecessorMessage.serializer);
         registerMessageHandler(FindSuccessorPredecessorResponseMessage.MSG_CODE, uponFindSuccessorPredecessorResponseMessage, FindSuccessorPredecessorResponseMessage.serializer);
-
         registerMessageHandler(NotifyMessage.MSG_CODE, uponNotification, NotifyMessage.serializer);
-
         registerMessageHandler(RouteMessage.MSG_CODE, uponRouteMessage, RouteMessage.serializer);
+        
+        //Notifications Produced
+        registerNotification(RouteDelivery.NOTIFICATION_ID, RouteDelivery.NOTIFICATION_NAME);
+        registerNotification(RouteNotify.NOTIFICATION_ID, RouteNotify.NOTIFICATION_NAME);
+
         //Requests
         registerRequestHandler(RouteRequest.REQUEST_ID, uponRouteRequest);
 

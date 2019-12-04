@@ -1,8 +1,9 @@
 package dissemination;
 
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
 import babel.exceptions.DestinationProtocolDoesNotExist;
 import babel.exceptions.HandlerRegistrationException;
 import babel.handlers.ProtocolMessageHandler;
@@ -48,7 +49,13 @@ public class Dissemination extends GenericProtocol {
 		registerNotificationHandler(RouteDelivery.NOTIFICATION_ID, uponRouteDelivery);
 		registerNotificationHandler(RouteNotify.NOTIFICATION_ID, uponRouteNotify);
 
+		//Requests
 		registerRequestHandler(DisseminateRequest.REQUEST_ID, uponDisseminateRequest);
+		
+		//Notifications Produced
+        registerNotification(MessageDelivery.NOTIFICATION_ID, MessageDelivery.NOTIFICATION_NAME);
+		
+		//Messages
 		registerMessageHandler(DisseminationMessage.MSG_CODE, uponDisseminationMessage, DisseminationMessage.serializer);
 
 		//Timers

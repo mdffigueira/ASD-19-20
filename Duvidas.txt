@@ -22,9 +22,12 @@ Está a faltar para a fase 2:
 				se devolve resposta - reset ao timer + mantem
 				se nao: drop da children (basicamente unsub)
 				
-	colocar a logica do calculo de popularidade de um topico no PS, DHT ou no Scribe
-	terminar as mensagens no PublishSubscribe para que ele consiga receber o RouteDelivery e mandar para o PS original e assim enviar por fim a mensagem atraves do flood ou do scribe
-	
+	colocar a logica do calculo de popularidade de um topico no PS, DHT ou no Scribe:
+		Scribe->DHT: trigger PopularityUpdate (nodeID)
+		DHT: uponNotif() - routeResponsavel nodeID
+		DHT do responsável: triggerNotification(nodeID)
+		PUBSUB: mantem a lista de subs/topico
+		
 ____________________________________________________________________________________
 
 Está a faltar para a fase 3:
