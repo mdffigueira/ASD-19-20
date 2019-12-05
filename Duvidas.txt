@@ -31,4 +31,7 @@ Está a faltar para a fase 2:
 ____________________________________________________________________________________
 
 Está a faltar para a fase 3:
- 
+	- escrever as cenas num ficheiro (optional)
+	- state machine status (publish)
+	- multi-paxos
+	- DHT, falta mandar as cenas das sequencias

@@ -1,10 +1,8 @@
 package publishsubscribe;
 
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-
 import babel.exceptions.DestinationProtocolDoesNotExist;
 import babel.exceptions.HandlerRegistrationException;
 import babel.handlers.ProtocolNotificationHandler;

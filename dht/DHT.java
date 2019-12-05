@@ -37,6 +37,7 @@ public class DHT extends GenericProtocol implements INodeListener {
     public final static int PUBLISH = 3;
     public final static int POPULARITY = 4;
 
+    @SuppressWarnings("deprecation")
     public DHT(INetwork net) throws HandlerRegistrationException {
         super("DHT", PROTOCOL_ID, net);
         //messages
@@ -182,7 +183,7 @@ public class DHT extends GenericProtocol implements INodeListener {
                 if (success.getSendAgain()) {
                     success.isToSendAgain(false);
                     FindSuccessorMessage m = new FindSuccessorMessage(success, next);
-
+                    sendMessage(m, success.getMyself());
                 } else {
                     finger[next] = new Node(fingerNode(next), success.getMyself());
                     System.out.println(next + "-> " + finger[next].getId() + " and " + finger[next].getMyself());
