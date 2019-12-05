@@ -1,11 +1,11 @@
 package publishsubscribe;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+
 import babel.exceptions.DestinationProtocolDoesNotExist;
 import babel.exceptions.HandlerRegistrationException;
 import babel.handlers.ProtocolNotificationHandler;
@@ -40,10 +40,12 @@ public class PublishSubscribe extends GenericProtocol {
 	public final static int UNSUBSCRIBE = 2;
 	public final static int PUBLISH = 3;
 	public final static int POPULARITY = 4;
+	public final static float POP_PERCENTAGE = 0.7f;
 
 	//Set of Topics
 	private Set<byte[]> topics;
 	private Map<Integer, TreeSet<Node>> topicSubs;
+	private Set<Node> activeKnownNodes;
 
 	@SuppressWarnings("deprecation")
 	public PublishSubscribe(INetwork net) throws HandlerRegistrationException {
@@ -66,8 +68,9 @@ public class PublishSubscribe extends GenericProtocol {
 	public void init(Properties props) {
 
 		//Initialize State
-		this.topics = new TreeSet<>();
+		this.topics = new TreeSet<byte[]>();
 		this.topicSubs = new HashMap<Integer, TreeSet<Node>>();
+		this.activeKnownNodes = new TreeSet<Node>();
 	}
 
 	private void disseminateRequest(byte[] top, byte[] m, int typeM) {
@@ -90,7 +93,7 @@ public class PublishSubscribe extends GenericProtocol {
 			if(PROTOCOL_ID == req.getProtocolId()) {
 				Message msg = req.getMsg();
 				int msgId = req.getMsgId();
-				boolean popular = topicSubs.containsKey(msgId) != null ? (topicSubs.get(msgId).size()/ > 0.5 ? true : false) : false;
+				boolean popular = topicSubs.containsKey(msgId) ? (topicSubs.get(msgId).size()/activeKnownNodes.size() > POP_PERCENTAGE ? true : false) : false;
 				if(popular) {
 					disseminateRequest(msg.getTopic(), msg.getMessage(), msg.getTypeM());
 				}
@@ -112,9 +115,16 @@ public class PublishSubscribe extends GenericProtocol {
 				if(topicSubs.containsKey(topic)) {
 					if(msgType == SUBSCRIBE) {
 						topicSubs.get(topic).add(nodeInt);
+						activeKnownNodes.add(nodeInt);
 					}
 					else if(msgType == UNSUBSCRIBE) {
 						topicSubs.get(topic).remove(nodeInt);
+						boolean removeFromActiveNodes = true;
+						for(TreeSet<Node> subs : topicSubs.values()) {
+							if(subs.contains(nodeInt))
+								removeFromActiveNodes = false;
+						}
+						if(removeFromActiveNodes) activeKnownNodes.remove(nodeInt);
 					}
 				}
 				else {
@@ -122,6 +132,7 @@ public class PublishSubscribe extends GenericProtocol {
 						TreeSet<Node> nodes = new TreeSet<Node>();
 						nodes.add(nodeInt);
 						topicSubs.put(topic, nodes);
+						activeKnownNodes.add(nodeInt);
 					}
 				}
 			}
