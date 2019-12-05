@@ -1,5 +1,8 @@
 package publishsubscribe;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -11,10 +14,12 @@ import babel.notification.ProtocolNotification;
 import babel.protocol.GenericProtocol;
 import babel.requestreply.ProtocolRequest;
 import dht.DHT;
+import dht.Node;
 import dht.notification.RouteDelivery;
 import dissemination.Dissemination;
 import dissemination.Message;
 import dissemination.notification.MessageDelivery;
+import dissemination.notification.UpdatePopularity;
 import dissemination.requests.RouteRequest;
 import floodbcast.FloodBCast;
 import floodbcast.delivers.FloodBCastDeliver;
@@ -38,6 +43,7 @@ public class PublishSubscribe extends GenericProtocol {
 
 	//Set of Topics
 	private Set<byte[]> topics;
+	private Map<Integer, TreeSet<Node>> topicSubs;
 
 	@SuppressWarnings("deprecation")
 	public PublishSubscribe(INetwork net) throws HandlerRegistrationException {
@@ -52,6 +58,7 @@ public class PublishSubscribe extends GenericProtocol {
 		registerNotification(PSDeliver.NOTIFICATION_ID, PSDeliver.NOTIFICATION_NAME);
 		registerNotificationHandler(MessageDelivery.NOTIFICATION_ID, uponMessageDelivery);
 		registerNotificationHandler(RouteDelivery.NOTIFICATION_ID, uponRouteDelivery);
+		registerNotificationHandler(UpdatePopularity.NOTIFICATION_ID, uponUpdatePopularityNotification);
 		registerNotificationHandler(FloodBCastDeliver.NOTIFICATION_ID, uponFloodBCastDeliver);
 	}
 
@@ -60,6 +67,7 @@ public class PublishSubscribe extends GenericProtocol {
 
 		//Initialize State
 		this.topics = new TreeSet<>();
+		this.topicSubs = new HashMap<Integer, TreeSet<Node>>();
 	}
 
 	private void disseminateRequest(byte[] top, byte[] m, int typeM) {
@@ -81,12 +89,40 @@ public class PublishSubscribe extends GenericProtocol {
 			RouteDelivery req = (RouteDelivery) not;
 			if(PROTOCOL_ID == req.getProtocolId()) {
 				Message msg = req.getMsg();
-				int popular = req.isPopular();
-				if(popular == 0) {
+				int msgId = req.getMsgId();
+				boolean popular = topicSubs.containsKey(msgId) != null ? (topicSubs.get(msgId).size()/ > 0.5 ? true : false) : false;
+				if(popular) {
 					disseminateRequest(msg.getTopic(), msg.getMessage(), msg.getTypeM());
 				}
 				else {
 					sendToFlood(msg);
+				}
+			}
+		}
+	};
+	
+	private ProtocolNotificationHandler uponUpdatePopularityNotification = new ProtocolNotificationHandler() {
+		@Override
+		public void uponNotification(ProtocolNotification not) {
+			UpdatePopularity req = (UpdatePopularity) not;
+			if(PROTOCOL_ID == req.getProtocolId()) {
+				int topic = req.getMsgId();
+				int msgType = req.getTypeMsg();
+				Node nodeInt = req.getNodeInterested();
+				if(topicSubs.containsKey(topic)) {
+					if(msgType == SUBSCRIBE) {
+						topicSubs.get(topic).add(nodeInt);
+					}
+					else if(msgType == UNSUBSCRIBE) {
+						topicSubs.get(topic).remove(nodeInt);
+					}
+				}
+				else {
+					if(msgType == SUBSCRIBE) {
+						TreeSet<Node> nodes = new TreeSet<Node>();
+						nodes.add(nodeInt);
+						topicSubs.put(topic, nodes);
+					}
 				}
 			}
 		}

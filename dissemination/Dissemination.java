@@ -21,6 +21,7 @@ import dht.notification.RouteDelivery;
 import dht.notification.RouteNotify;
 import dissemination.message.DisseminationMessage;
 import dissemination.notification.MessageDelivery;
+import dissemination.notification.UpdatePopularity;
 import dissemination.requests.RouteRequest;
 import dissemination.timers.SubscribeAgainTimer;
 import dissemination.timers.SubscriptionTimeLimit;
@@ -34,7 +35,6 @@ public class Dissemination extends GenericProtocol {
 	private final static int SUBSCRIBE = 1;
 	private final static int UNSUBSCRIBE = 2;
 	private final static int PUBLISH = 3;
-	private final static int POPULARITY = 4;
 
 	private Map<Integer, Topic> topics;
 	private Node nodeID;
@@ -54,6 +54,7 @@ public class Dissemination extends GenericProtocol {
 		
 		//Notifications Produced
         registerNotification(MessageDelivery.NOTIFICATION_ID, MessageDelivery.NOTIFICATION_NAME);
+        registerNotification(UpdatePopularity.NOTIFICATION_ID, UpdatePopularity.NOTIFICATION_NAME);
 		
 		//Messages
 		registerMessageHandler(DisseminationMessage.MSG_CODE, uponDisseminationMessage, DisseminationMessage.serializer);
@@ -107,6 +108,11 @@ public class Dissemination extends GenericProtocol {
 			topic.addTimer(msg.getNodeInterested(), timer);
 			if (!topic.nodeExists(nodeID) && !isResponsible)
 				routeRequest(msgId, msg, hasUpstream);
+			else {
+				UpdatePopularity not = new UpdatePopularity(msgId, msg.getNodeInterested(), SUBSCRIBE, DHT.PROTOCOL_ID);
+				triggerNotification(not);
+			}
+				
 		} else {
 			if (isResponsible) {
 				topic = topics.put(msgId, new Topic(upStream));
@@ -138,6 +144,8 @@ public class Dissemination extends GenericProtocol {
 				sendMessage(m, upStream.getMyself());
 				topics.remove(msgId);
 			}
+			UpdatePopularity not = new UpdatePopularity(msgId, msg.getNodeInterested(), UNSUBSCRIBE, DHT.PROTOCOL_ID);
+			triggerNotification(not);
 		}
 
 	}
