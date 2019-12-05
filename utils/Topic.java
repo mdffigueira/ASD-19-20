@@ -1,10 +1,8 @@
-package dissemination;
+package utils;
 
 import java.util.HashMap;
 import java.util.TreeSet;
 import java.util.UUID;
-
-import dht.Node;
 
 public class Topic {
 

@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class PSMessage extends ProtocolMessage {
 
-    public final static short MSG_CODE = 506;
+    public final static short MSG_CODE = 502;
 
     private final UUID mid;
     private byte[] payload;

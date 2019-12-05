@@ -1,8 +1,8 @@
 package dht.notification;
 
 import babel.notification.ProtocolNotification;
-import dht.Node;
-import dissemination.Message;
+import utils.Node;
+import utils.Message;
 
 public class RouteNotify extends ProtocolNotification {
 

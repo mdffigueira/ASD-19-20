@@ -1,15 +1,11 @@
 package dissemination.message;
 
 import babel.protocol.event.ProtocolMessage;
-import dht.Node;
-import dissemination.Message;
+import utils.Message;
 import io.netty.buffer.ByteBuf;
-import network.Host;
 import network.ISerializer;
 
 import java.net.UnknownHostException;
-import java.util.TreeSet;
-import java.util.UUID;
 
 public class DisseminationMessage extends ProtocolMessage {
 

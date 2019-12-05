@@ -2,22 +2,27 @@ package publishsubscribe;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
 import babel.exceptions.DestinationProtocolDoesNotExist;
 import babel.exceptions.HandlerRegistrationException;
+import babel.handlers.ProtocolMessageHandler;
 import babel.handlers.ProtocolNotificationHandler;
 import babel.handlers.ProtocolRequestHandler;
 import babel.notification.ProtocolNotification;
 import babel.protocol.GenericProtocol;
+import babel.protocol.event.ProtocolMessage;
 import babel.requestreply.ProtocolRequest;
 import dht.DHT;
-import dht.Node;
+import utils.Node;
 import dht.notification.RouteDelivery;
 import dissemination.Dissemination;
-import dissemination.Message;
+import utils.Message;
 import dissemination.notification.MessageDelivery;
 import dissemination.notification.UpdatePopularity;
 import dissemination.requests.RouteRequest;
@@ -25,16 +30,21 @@ import floodbcast.FloodBCast;
 import floodbcast.delivers.FloodBCastDeliver;
 import floodbcast.requests.FloodBCastRequest;
 import network.INetwork;
+import network.Host;
 import publishsubscribe.delivers.PSDeliver;
+import publishsubscribe.messages.GetCurrMembshipMessage;
+import publishsubscribe.messages.ReturnCurrMembshipMessage;
 import publishsubscribe.requests.DisseminateRequest;
 import publishsubscribe.requests.PSPublishRequest;
 import publishsubscribe.requests.PSSubscribeRequest;
 import publishsubscribe.requests.PSUnsubscribeRequest;
+import publishsubscribe.requests.*;
+import utils.Membership;
 
 public class PublishSubscribe extends GenericProtocol {
 
-	public final static short PROTOCOL_ID = 500;
-	public final static String PROTOCOL_NAME = "Publish Subscribe";
+    public final static short PROTOCOL_ID = 500;
+    public final static String PROTOCOL_NAME = "Publish Subscribe";
 
 	public final static int SUBSCRIBE = 1;
 	public final static int UNSUBSCRIBE = 2;
@@ -42,19 +52,24 @@ public class PublishSubscribe extends GenericProtocol {
 	public final static int POPULARITY = 4;
 	public final static float POP_PERCENTAGE = 0.7f;
 
-	//Set of Topics
-	private Set<byte[]> topics;
+    //Set of Topics
+    private Set<byte[]> topics;
+    private static int REPLICA_SIZE = 3;
+    private Set<Host> membership;
 	private Map<Integer, TreeSet<Node>> topicSubs;
 	private Set<Node> activeKnownNodes;
 
-	@SuppressWarnings("deprecation")
-	public PublishSubscribe(INetwork net) throws HandlerRegistrationException {
-		super("Publish Subscribe", PROTOCOL_ID, net);
+    @SuppressWarnings("deprecation")
+    public PublishSubscribe(INetwork net) throws HandlerRegistrationException {
+        super("Publish Subscribe", PROTOCOL_ID, net);
 
-		//Requests
-		registerRequestHandler(PSSubscribeRequest.REQUEST_ID, uponSubscribeRequest);
-		registerRequestHandler(PSUnsubscribeRequest.REQUEST_ID, uponUnsubscribeRequest);
-		registerRequestHandler(PSPublishRequest.REQUEST_ID, uponPublishRequest);
+        //Messages
+		registerMessageHandler(GetCurrMembshipMessage.MSG_CODE,uponGetCurrentMembershipMessage, GetCurrMembshipMessage.serializer);
+
+        //Requests
+        registerRequestHandler(PSSubscribeRequest.REQUEST_ID, uponSubscribeRequest);
+        registerRequestHandler(PSUnsubscribeRequest.REQUEST_ID, uponUnsubscribeRequest);
+        registerRequestHandler(PSPublishRequest.REQUEST_ID, uponPublishRequest);
 
 		//Notifications Produced
 		registerNotification(PSDeliver.NOTIFICATION_ID, PSDeliver.NOTIFICATION_NAME);
@@ -64,19 +79,43 @@ public class PublishSubscribe extends GenericProtocol {
 		registerNotificationHandler(FloodBCastDeliver.NOTIFICATION_ID, uponFloodBCastDeliver);
 	}
 
-	@Override
-	public void init(Properties props) {
+    @Override
+    public void init(Properties props) {
 
-		//Initialize State
-		this.topics = new TreeSet<byte[]>();
+        //Initialize State
+        this.topics = new TreeSet<>();
+        this.membership = new HashSet<>();
 		this.topicSubs = new HashMap<Integer, TreeSet<Node>>();
 		this.activeKnownNodes = new TreeSet<Node>();
-	}
 
-	private void disseminateRequest(byte[] top, byte[] m, int typeM) {
-		Message message = new Message(top, m, typeM);
-		DisseminateRequest dissReq = new DisseminateRequest(top, message);
-		dissReq.setDestination(Dissemination.PROTOCOL_ID);
+		if (props.contains("NetworkContactNode")) {
+
+            try {
+                String[] hostElems = props.getProperty("NetworkContactNode").split(":");
+                System.out.println("Multi-Paxos: I'm " + myself);
+                Host contactNode = new Host(InetAddress.getByName(hostElems[0]), Short.parseShort(hostElems[1]));
+                StartRequest req;
+                if (contactNode.equals(myself)) {
+                    //todo Tens que descobrir o que é o initialState
+                    req = new StartRequest(0, null);
+                    membership.add(myself);
+                } else {
+                    req = new StartRequest(420, new Membership(contactNode, 420));
+
+                }
+
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+    }
+
+    private void disseminateRequest(byte[] top, byte[] m, int typeM) {
+        Message message = new Message(top, m, typeM);
+        DisseminateRequest dissReq = new DisseminateRequest(top, message);
+        dissReq.setDestination(Dissemination.PROTOCOL_ID);
 
 		try {
 			sendRequest(dissReq);
@@ -103,7 +142,7 @@ public class PublishSubscribe extends GenericProtocol {
 			}
 		}
 	};
-	
+
 	private ProtocolNotificationHandler uponUpdatePopularityNotification = new ProtocolNotificationHandler() {
 		@Override
 		public void uponNotification(ProtocolNotification not) {
@@ -190,25 +229,40 @@ public class PublishSubscribe extends GenericProtocol {
 		}
 	};
 
-	private ProtocolNotificationHandler uponFloodBCastDeliver = new ProtocolNotificationHandler() {
+    private ProtocolNotificationHandler uponFloodBCastDeliver = new ProtocolNotificationHandler() {
 
+        @Override
+        public void uponNotification(ProtocolNotification not) {
+            FloodBCastDeliver req = (FloodBCastDeliver) not;
+            if (topics.contains(req.getTopic())) {
+                PSDeliver deliver = new PSDeliver(req.getTopic(), req.getMessage());
+                triggerNotification(deliver);
+            }
+        }
+    };
+
+    private ProtocolNotificationHandler uponMessageDelivery = new ProtocolNotificationHandler() {
+
+        @Override
+        public void uponNotification(ProtocolNotification not) {
+            MessageDelivery req = (MessageDelivery) not;
+            PSDeliver deliver = new PSDeliver(req.getMessage().getTopic(), req.getMessage().getMessage());
+            triggerNotification(deliver);
+        }
+    };
+
+    private void getMessage(byte[] topic, int seqNumber){
+
+	}
+	private ProtocolMessageHandler uponGetCurrentMembershipMessage = new ProtocolMessageHandler() {
 		@Override
-		public void uponNotification(ProtocolNotification not) {
-			FloodBCastDeliver req = (FloodBCastDeliver) not;
-			if (topics.contains(req.getTopic())) {
-				PSDeliver deliver = new PSDeliver(req.getTopic(), req.getMessage());
-				triggerNotification(deliver);
-			}
+		public void receive(ProtocolMessage protocolMessage) {
+			GetCurrMembshipMessage msg = (GetCurrMembshipMessage) protocolMessage;
+			ReturnCurrMembshipMessage rep= new ReturnCurrMembshipMessage(membership);
 		}
 	};
-
-	private ProtocolNotificationHandler uponMessageDelivery = new ProtocolNotificationHandler() {
-
-		@Override
-		public void uponNotification(ProtocolNotification not) {
-			MessageDelivery req = (MessageDelivery) not;
-			PSDeliver deliver = new PSDeliver(req.getMessage().getTopic(), req.getMessage().getMessage());
-			triggerNotification(deliver);
-		}
-	};
+	private void getCurrentMembership(Host node){
+		GetCurrMembshipMessage msg = new GetCurrMembshipMessage();
+		sendMessage(msg,node);
+	}
 }

@@ -1,7 +1,7 @@
 package dissemination.timers;
 
 import babel.timer.ProtocolTimer;
-import dht.Node;
+import utils.Node;
 
 public class SubscriptionTimeLimit extends ProtocolTimer {
     public static final short TimerCode =901;

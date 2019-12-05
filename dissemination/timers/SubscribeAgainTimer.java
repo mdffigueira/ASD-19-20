@@ -1,7 +1,7 @@
 package dissemination.timers;
 
 import babel.timer.ProtocolTimer;
-import dissemination.Message;
+import utils.Message;
 
 public class SubscribeAgainTimer extends ProtocolTimer {
     public static final short TimerCode = 902;

@@ -1,7 +1,7 @@
 package dissemination.notification;
 
 import babel.notification.ProtocolNotification;
-import dht.Node;
+import utils.Node;
 import dht.notification.RouteDelivery;
 
 

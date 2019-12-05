@@ -1,8 +1,7 @@
 package dissemination.requests;
 
 import babel.requestreply.ProtocolRequest;
-import dht.Node;
-import dissemination.Message;
+import utils.Message;
 
 public class RouteRequest extends ProtocolRequest {
 

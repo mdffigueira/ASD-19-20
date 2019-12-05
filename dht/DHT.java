@@ -25,13 +25,14 @@ import dht.notification.RouteNotify;
 import dht.timers.FixFingerTimer;
 import dht.timers.StabilizeTimer;
 import dissemination.Dissemination;
-import dissemination.Message;
+import utils.Message;
 import dissemination.notification.UpdatePopularity;
 import dissemination.requests.RouteRequest;
 import network.Host;
 import network.INetwork;
 import network.INodeListener;
 import publishsubscribe.PublishSubscribe;
+import utils.Node;
 
 public class DHT extends GenericProtocol implements INodeListener {
 	public final static short PROTOCOL_ID = 800;
@@ -59,7 +60,7 @@ public class DHT extends GenericProtocol implements INodeListener {
 		registerNotification(RouteDelivery.NOTIFICATION_ID, RouteDelivery.NOTIFICATION_NAME);
 		registerNotification(RouteNotify.NOTIFICATION_ID, RouteNotify.NOTIFICATION_NAME);
 		registerNotification(UpdatePopularity.NOTIFICATION_ID, UpdatePopularity.NOTIFICATION_NAME);
-		
+
 		//Notifications
 		registerNotificationHandler(UpdatePopularity.NOTIFICATION_ID, uponUpdatePopularity);
 

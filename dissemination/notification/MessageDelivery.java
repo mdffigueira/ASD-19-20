@@ -1,7 +1,7 @@
 package dissemination.notification;
 
 import babel.notification.ProtocolNotification;
-import dissemination.Message;
+import utils.Message;
 
 public class MessageDelivery extends ProtocolNotification {
 

@@ -1,10 +1,6 @@
-package dissemination;
+package utils;
 
 import io.netty.buffer.ByteBuf;
-
-import java.util.UUID;
-
-import dht.Node;
 
 public class Message {
     // UUID mid;

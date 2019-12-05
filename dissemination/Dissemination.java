@@ -16,7 +16,7 @@ import babel.protocol.event.ProtocolMessage;
 import babel.requestreply.ProtocolRequest;
 import babel.timer.ProtocolTimer;
 import dht.DHT;
-import dht.Node;
+import utils.Node;
 import dht.notification.RouteDelivery;
 import dht.notification.RouteNotify;
 import dissemination.message.DisseminationMessage;
@@ -27,6 +27,8 @@ import dissemination.timers.SubscribeAgainTimer;
 import dissemination.timers.SubscriptionTimeLimit;
 import network.INetwork;
 import publishsubscribe.requests.DisseminateRequest;
+import utils.Message;
+import utils.Topic;
 
 public class Dissemination extends GenericProtocol {
 

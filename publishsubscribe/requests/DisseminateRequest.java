@@ -1,11 +1,11 @@
 package publishsubscribe.requests;
 
 import babel.requestreply.ProtocolRequest;
-import dissemination.Message;
+import utils.Message;
 
 public class DisseminateRequest extends ProtocolRequest {
 
-    public static final short REQUEST_ID = 901;
+    public static final short REQUEST_ID = 501;
 
     Message m;
     private byte[] topic;

@@ -1,7 +1,7 @@
 package dht.messages;
 
 import babel.protocol.event.ProtocolMessage;
-import dht.Node;
+import utils.Node;
 import io.netty.buffer.ByteBuf;
 import network.ISerializer;
 
