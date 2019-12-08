@@ -23,6 +23,7 @@ import publishsubscribe.messages.AddReplicaMessageReply;
 import utils.Node;
 import dht.notification.RouteDelivery;
 import dissemination.Dissemination;
+import utils.Membership;
 import utils.Message;
 import dissemination.notification.MessageDelivery;
 import dissemination.notification.UpdatePopularity;
@@ -120,8 +121,9 @@ public class PublishSubscribe extends GenericProtocol {
 		public void receive(ProtocolMessage protocolMessage) {
 			AddReplicaMessageReply m = (AddReplicaMessageReply) protocolMessage;
 			//TODO
-			AddReplicaMessageReply msg = new AddReplicaMessageReply();
-
+			int seqNumber = 0;
+			Membership members = new Membership(m.getCurrLeader(), seqNumber, m.getReplicas())
+			 StartRequest req = new StartRequest(m.getInstancePaxos(), members);
 		}
 	};
 

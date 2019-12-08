@@ -12,13 +12,13 @@ import java.util.Set;
 public class AddReplicaMessageReply extends ProtocolMessage {
     public static final short MSG_CODE = 507;
     private Host h;
-    private Set<Host> replica;
+    private Set<Host> replicas;
     private int n;
     private volatile int size;
 
     public AddReplicaMessageReply(Set<Host> replica, int n, Host h) {
         super(AddReplicaMessageReply.MSG_CODE);
-        this.replica = replica;
+        this.replicas = replica;
         this.n = n;
         this.h = h;
     }
@@ -27,12 +27,19 @@ public class AddReplicaMessageReply extends ProtocolMessage {
         return h;
     }
 
+    public Set<Host> getReplicas() {
+    	return replicas;
+    }
+    
+    public int getInstancePaxos() {
+    	return n;
+    }
     public static final ISerializer<AddReplicaMessageReply> serializer = new ISerializer<AddReplicaMessageReply>() {
         @Override
         public void serialize(AddReplicaMessageReply p, ByteBuf byteBuf) {
             p.h.serialize(byteBuf);
-            byteBuf.writeInt(p.replica.size());
-            for (Host h : p.replica) {
+            byteBuf.writeInt(p.replicas.size());
+            for (Host h : p.replicas) {
                 h.serialize(byteBuf);
             }
             byteBuf.writeInt(p.n);
@@ -53,7 +60,7 @@ public class AddReplicaMessageReply extends ProtocolMessage {
         public int serializedSize(AddReplicaMessageReply m) {
             if( m.size ==-1)
                 m.size =2;
-            for(Host h : m.replica){
+            for(Host h : m.replicas){
                 m.size+=h.serializedSize();
             }
             return (m.size+Integer.BYTES+m.h.serializedSize());
