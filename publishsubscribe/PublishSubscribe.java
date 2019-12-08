@@ -297,7 +297,8 @@ public class PublishSubscribe extends GenericProtocol {
 		@Override
 		public void receive(ProtocolMessage protocolMessage) {
 			GetCurrMembshipMessage msg = (GetCurrMembshipMessage) protocolMessage;
-			ReturnCurrMembshipMessage rep = new ReturnCurrMembshipMessage(membership);
+			ReturnCurrMembshipMessage reply = new ReturnCurrMembshipMessage(membership);
+			sendMessage(reply, msg.getFrom());
 		}
 	};
 
