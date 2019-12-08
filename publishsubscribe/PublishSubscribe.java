@@ -60,6 +60,8 @@ public class PublishSubscribe extends GenericProtocol {
 	private Set<byte[]> topics;
 	private static int REPLICA_SIZE = 3;
 	private Set<Host> membership;
+	private Host leader;
+	private int paxosN;
 	private Map<Integer, TreeSet<Node>> topicSubs;
 	private Set<Node> activeKnownNodes;
 
@@ -79,7 +81,6 @@ public class PublishSubscribe extends GenericProtocol {
 
 		//Notifications Produced
 		registerNotification(PSDeliver.NOTIFICATION_ID, PSDeliver.NOTIFICATION_NAME);
-		registerNotificationHandler(GetMembershipNotification.NOTIFICATION_ID, uponGetMembershipNotification);
 		registerNotificationHandler(MessageDelivery.NOTIFICATION_ID, uponMessageDelivery);
 		registerNotificationHandler(RouteDelivery.NOTIFICATION_ID, uponRouteDelivery);
 		registerNotificationHandler(UpdatePopularity.NOTIFICATION_ID, uponUpdatePopularityNotification);
@@ -94,23 +95,30 @@ public class PublishSubscribe extends GenericProtocol {
 		this.membership = new HashSet<>();
 		this.topicSubs = new HashMap<Integer, TreeSet<Node>>();
 		this.activeKnownNodes = new TreeSet<Node>();
+		//TODO: Tens que descobrir o que é o initialState
+		paxosN = 0;
 		if (props.contains("NetworkContactNode")) {
 
 			try {
 				String[] hostElems = props.getProperty("NetworkContactNode").split(":");
 				System.out.println("Multi-Paxos: I'm " + myself);
 				Host contactNode = new Host(InetAddress.getByName(hostElems[0]), Short.parseShort(hostElems[1]));
-				StartRequest req;
+
 				if (contactNode.equals(myself)) {
-					//TODO: Tens que descobrir o que é o initialState
-					req = new StartRequest(0, null);
+					StartRequest req = new StartRequest(paxosN, null);
+					req.setDestination(MultiPaxos.PROTOCOL_ID);
+					sendRequest(req);
 					membership.add(myself);
+					leader = myself;
 				} else {
 					AddReplicaMessage msg = new AddReplicaMessage(contactNode);
 					sendMessage(msg, contactNode);
+					leader = contactNode;
 				}
 
 			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			} catch (DestinationProtocolDoesNotExist e) {
 				e.printStackTrace();
 			}
 
@@ -121,25 +129,13 @@ public class PublishSubscribe extends GenericProtocol {
 	private ProtocolMessageHandler uponAddReplicaMessage = new ProtocolMessageHandler() {
 		@Override
 		public void receive(ProtocolMessage protocolMessage) {
-			AddReplicaMessageReply m = (AddReplicaMessageReply) protocolMessage;
-			//TODO notificação ->paxos, paxos->resposta
-			GetMembershipRequest getM = new GetMembershipRequest();
-			getM.setDestination(MultiPaxos.PROTOCOL_ID);
-			try {
-				sendRequest(getM);
-			} catch (DestinationProtocolDoesNotExist e) {
-				e.printStackTrace();
-			}
-		}
-	};
-
-	private ProtocolNotificationHandler uponGetMembershipNotification = new ProtocolNotificationHandler() {
-		@Override
-		public void uponNotification(ProtocolNotification not) {
-			GetMembershipNotification req = (GetMembershipNotification) not;
+			AddReplicaMessage m = (AddReplicaMessage) protocolMessage;
 			
-			AddReplicaMessageReply msg = new AddReplicaMessageReply(not.getMembership(), not.getInstancePaxos(), not.getHost());
-			sendMessage(msg, contactNode);
+			if(membership.size() < REPLICA_SIZE) {
+				membership.add(m.getH());
+				AddReplicaMessageReply msg = new AddReplicaMessageReply(membership, paxosN, leader);
+				sendMessage(msg, m.getFrom());
+			}
 		}
 	};
 
@@ -151,6 +147,12 @@ public class PublishSubscribe extends GenericProtocol {
 			int seqNumber = 0;
 			Membership members = new Membership(m.getH(), seqNumber, m.getReplicas());
 			StartRequest req = new StartRequest(m.getInstancePaxos(), members);
+			req.setDestination(MultiPaxos.PROTOCOL_ID);
+			try {
+				sendRequest(req);
+			} catch (DestinationProtocolDoesNotExist e) {
+				e.printStackTrace();
+			}
 		}
 	};
 
