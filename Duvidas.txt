@@ -32,6 +32,9 @@ ________________________________________________________________________________
 
 Está a faltar para a fase 3:
 	- escrever as cenas num ficheiro (optional)
-	- state machine status (publish)
+	- state machine status (publish):
+			- GETMESSAGE(topicId, sequenceNumber)
+			- Mensagens têm de ser guardadas tendo em conta a sequenceNumber!?
+			- Publish tem de ser redirecionado para o paxos
 	- multi-paxos
 	- DHT, falta mandar as cenas das sequencias
