@@ -37,6 +37,7 @@ import network.INetwork;
 import network.Host;
 import publishsubscribe.delivers.PSDeliver;
 import publishsubscribe.messages.GetCurrMembshipMessage;
+import publishsubscribe.messages.RemoveReplicaMessage;
 import publishsubscribe.messages.ReturnCurrMembshipMessage;
 import publishsubscribe.requests.DisseminateRequest;
 import publishsubscribe.requests.PSPublishRequest;
@@ -73,6 +74,7 @@ public class PublishSubscribe extends GenericProtocol {
 		registerMessageHandler(GetCurrMembshipMessage.MSG_CODE, uponGetCurrentMembershipMessage, GetCurrMembshipMessage.serializer);
 		registerMessageHandler(AddReplicaMessageReply.MSG_CODE,uponAddReplicaMessageReply, AddReplicaMessageReply.serializer);
 		registerMessageHandler(AddReplicaMessage.MSG_CODE,uponAddReplicaMessage, AddReplicaMessage.serializer);
+		registerMessageHandler(RemoveReplicaMessage.MSG_CODE,uponRemoveReplicaMessage, RemoveReplicaMessage.serializer);
 
 		//Requests
 		registerRequestHandler(PSSubscribeRequest.REQUEST_ID, uponSubscribeRequest);
@@ -136,6 +138,14 @@ public class PublishSubscribe extends GenericProtocol {
 				AddReplicaMessageReply msg = new AddReplicaMessageReply(membership, paxosN, leader);
 				sendMessage(msg, m.getFrom());
 			}
+		}
+	};
+	
+	private ProtocolMessageHandler uponRemoveReplicaMessage = new ProtocolMessageHandler() {
+		@Override
+		public void receive(ProtocolMessage protocolMessage) {
+			RemoveReplicaMessage m = (RemoveReplicaMessage) protocolMessage;
+			membership.remove(m.getH());
 		}
 	};
 
