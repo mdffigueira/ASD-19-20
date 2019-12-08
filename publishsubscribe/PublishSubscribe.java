@@ -146,6 +146,9 @@ public class PublishSubscribe extends GenericProtocol {
 		public void receive(ProtocolMessage protocolMessage) {
 			RemoveReplicaMessage m = (RemoveReplicaMessage) protocolMessage;
 			membership.remove(m.getH());
+			if(m.getH() == leader) {
+				//TODO: decide new leader
+			}
 		}
 	};
 

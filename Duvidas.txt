@@ -31,8 +31,8 @@ Está a faltar para a fase 2:
 ____________________________________________________________________________________
 
 Está a faltar para a fase 3:
-	- escrever as cenas num ficheiro (optional)
 	- state machine status (publish):
+			- escrever as cenas num ficheiro (optional)
 			- GETMESSAGE(topicId, sequenceNumber)
 			- Mensagens têm de ser guardadas tendo em conta a sequenceNumber!?
 			- Publish tem de ser redirecionado para o paxos
