@@ -53,11 +53,11 @@ public class Dissemination extends GenericProtocol {
 
 		//Requests
 		registerRequestHandler(DisseminateRequest.REQUEST_ID, uponDisseminateRequest);
-		
+
 		//Notifications Produced
-        registerNotification(MessageDelivery.NOTIFICATION_ID, MessageDelivery.NOTIFICATION_NAME);
-        registerNotification(UpdatePopularity.NOTIFICATION_ID, UpdatePopularity.NOTIFICATION_NAME);
-		
+		registerNotification(MessageDelivery.NOTIFICATION_ID, MessageDelivery.NOTIFICATION_NAME);
+		registerNotification(UpdatePopularity.NOTIFICATION_ID, UpdatePopularity.NOTIFICATION_NAME);
+
 		//Messages
 		registerMessageHandler(DisseminationMessage.MSG_CODE, uponDisseminationMessage, DisseminationMessage.serializer);
 
@@ -85,15 +85,15 @@ public class Dissemination extends GenericProtocol {
 			int msgId = msg.getTopic().hashCode();
 
 			switch (msg.getTypeM()) {
-			case SUBSCRIBE:
-				subscribe(msgId, msg, null, false);
-				setupPeriodicTimer(new SubscribeAgainTimer(msgId, msg), 30000, 30000);
-				break;
-			case UNSUBSCRIBE:
-				unsubscribe(msgId, msg);
-				break;
-			case PUBLISH:
-				publish(msgId, msg, false);
+				case SUBSCRIBE:
+					subscribe(msgId, msg, null, false);
+					setupPeriodicTimer(new SubscribeAgainTimer(msgId, msg), 30000, 30000);
+					break;
+				case UNSUBSCRIBE:
+					unsubscribe(msgId, msg);
+					break;
+				case PUBLISH:
+					publish(msgId, msg, false);
 			}
 		}
 	};
@@ -114,7 +114,7 @@ public class Dissemination extends GenericProtocol {
 				UpdatePopularity not = new UpdatePopularity(msgId, msg.getNodeInterested(), SUBSCRIBE, DHT.PROTOCOL_ID);
 				triggerNotification(not);
 			}
-				
+
 		} else {
 			if (isResponsible) {
 				topic = topics.put(msgId, new Topic(upStream));
@@ -201,12 +201,12 @@ public class Dissemination extends GenericProtocol {
 				Message msg = req.getMsg();
 				int msgId = req.getMsgId();
 				switch (msg.getTypeM()) {
-				case SUBSCRIBE:
-					subscribe(msgId, msg, null, true);
-					break;
-				case PUBLISH:
-					publish(msgId, msg, true);
-					break;
+					case SUBSCRIBE:
+						subscribe(msgId, msg, null, true);
+						break;
+					case PUBLISH:
+						publish(msgId, msg, true);
+						break;
 
 				}
 			}
@@ -221,12 +221,12 @@ public class Dissemination extends GenericProtocol {
 			int msgId = req.getMsgId();
 
 			switch (msg.getTypeM()) {
-			case UNSUBSCRIBE:
-				unsubscribe(msgId, msg);
-				break;
-			case PUBLISH:
-				publish(msgId, msg, false);
-				break;
+				case UNSUBSCRIBE:
+					unsubscribe(msgId, msg);
+					break;
+				case PUBLISH:
+					publish(msgId, msg, false);
+					break;
 			}
 
 
@@ -242,12 +242,12 @@ public class Dissemination extends GenericProtocol {
 			int msgID = req.getMsgID();
 			Node upStream = req.getUpStream();
 			switch (msg.getTypeM()) {
-			case SUBSCRIBE:
-				subscribe(msgID, msg, upStream, false);
-				break;
-			case PUBLISH:
-				publish(msgID, msg, false);
-				break;
+				case SUBSCRIBE:
+					subscribe(msgID, msg, upStream, false);
+					break;
+				case PUBLISH:
+					publish(msgID, msg, false);
+					break;
 
 			}
 		}

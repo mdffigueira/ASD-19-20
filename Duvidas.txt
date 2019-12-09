@@ -38,3 +38,6 @@ Está a faltar para a fase 3:
 			- Publish tem de ser redirecionado para o paxos
 	- multi-paxos
 	- DHT, falta mandar as cenas das sequencias
+
+
+Alterar de notification para Response? Tive a pensar e notificação nao ficava melhor para quando é so o cliente a receber a emsnagem  e assim a ler?

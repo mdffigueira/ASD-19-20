@@ -22,7 +22,7 @@ public class MessageDelivery extends ProtocolNotification {
         return message;
     }
 
-   public int getMsgId(){
+    public int getMsgId() {
         return msgId;
-   }
+    }
 }
