@@ -203,7 +203,7 @@ public class PublishSubscribe extends GenericProtocol {
                 Message msg = req.getMsg();
                 int msgId = req.getMsgId();
                 boolean popular = topicSubs.containsKey(msgId) ? (topicSubs.get(msgId).size() / activeKnownNodes.size() > POP_PERCENTAGE ? true : false) : false;
-                if (popular) {
+                if (!popular) {
                     disseminateRequest(msg.getTopic(), msg.getMessage(), msg.getTypeM());
                 } else {
                     sendToFlood(msg);
