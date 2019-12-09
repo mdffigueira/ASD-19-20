@@ -13,12 +13,11 @@ import multipaxos.messages.PrepareMessage;
 import network.Host;
 import network.INetwork;
 import network.INodeListener;
+import publishsubscribe.requests.OperationRequest;
 import publishsubscribe.requests.StartRequest;
 import utils.Operation;
 
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 public class MultiPaxos extends GenericProtocol implements INodeListener {
     public final static short PROTOCOL_ID = 200;
@@ -30,10 +29,12 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
     private Operation va; //TODO: Highest accept? wtf
     Set<Host> replicas;
     Set<Host> aset;
+    LinkedList<AcceptMessage> pending;
     Host leader;
 
     public MultiPaxos(INetwork net) throws HandlerRegistrationException {
         super("MultiPaxos", PROTOCOL_ID, net);
+        pending = new LinkedList<>();
 //Notification Produced
         registerNotification(OperationDone.NOTIFICATION_ID, OperationDone.NOTIFICATION_NAME);
 
@@ -51,8 +52,10 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
     public void init(Properties props) {
         replicas = new HashSet<>();
         aset = new HashSet<>();
+        pending = new LinkedList<AcceptMessage>();
     }
 
+    //StartRequest
     private final ProtocolRequestHandler uponStartRequest = new ProtocolRequestHandler() {
         @Override
         public void uponRequest(ProtocolRequest protocolRequest) {
@@ -69,15 +72,22 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
 
         }
     };
+    /*                    LEADER ELECTION                  */
 
-    //LEADER ELECTION
-
-
+    //Operation deliver
     private final ProtocolRequestHandler uponOperationRequest = new ProtocolRequestHandler() {
         @Override
         public void uponRequest(ProtocolRequest protocolRequest) {
+            OperationRequest op = (OperationRequest) protocolRequest;
+            AcceptMessage msg = new AcceptMessage(na, op.getOp(), 420);
+            pending.add(msg);
+            if (pending.size() == 1) {
+                for (Host h : replicas)
+                    sendMessage(msg, h);
+            }
             //int psn = (OperationRequest) protocolRequest;
-            int n = np + 1;
+
+            //int n = np + 1;
             //  OperationRequest r =protocolRequest(Operat)
             //--->> AcceptMessage msg = new AcceptMessage(n,op);
         }
@@ -93,7 +103,7 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
 
         }
     };
-
+    //Accept
     private final ProtocolMessageHandler uponAcceptMessage = new ProtocolMessageHandler() {
         @Override
         public void receive(ProtocolMessage protocolMessage) {
@@ -102,7 +112,7 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
             Operation v = m.getOp();
             if (n > np) {
                 na = n;
-                // va = v; TODO: No algoritmo diz para guardar, mas acho que não é preciso na nossa implementação
+                va = v;
                 AcceptOkMessage msg = new AcceptOkMessage(na, va);
                 for (Host h : replicas) {
                     if (h != myself)
@@ -111,6 +121,7 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
             }
         }
     };
+    //Accept Ok
     private final ProtocolMessageHandler uponAcceptOKMessage = new ProtocolMessageHandler() {
         @Override
         public void receive(ProtocolMessage protocolMessage) {
@@ -129,6 +140,9 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
                         OperationDone notification = new OperationDone(va);
                         triggerNotification(notification);
                         aset.clear();
+                        pending.poll();
+                        for (Host h : replicas)
+                            sendMessage(pending.getFirst(), h);
                     }
                 }
             }

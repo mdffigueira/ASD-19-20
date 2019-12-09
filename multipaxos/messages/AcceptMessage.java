@@ -13,7 +13,7 @@ public class AcceptMessage extends ProtocolMessage {
     private Operation op;
     private int seqNumb;
 
-    AcceptMessage(int n, Operation op, int seqNumb) {
+    public AcceptMessage(int n, Operation op, int seqNumb) {
         super(AcceptMessage.MSG_CODE);
         this.n = n;
         this.op = op;
