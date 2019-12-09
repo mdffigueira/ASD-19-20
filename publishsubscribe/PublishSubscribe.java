@@ -67,7 +67,6 @@ public class PublishSubscribe extends GenericProtocol {
     private int paxosN;
     private Map<Integer, TreeSet<Node>> topicSubs;
     private Set<Node> activeKnownNodes;
-    private Map
 
     @SuppressWarnings("deprecation")
     public PublishSubscribe(INetwork net) throws HandlerRegistrationException {
@@ -85,7 +84,7 @@ public class PublishSubscribe extends GenericProtocol {
         registerRequestHandler(PSPublishRequest.REQUEST_ID, uponPublishRequest);
 
         //Notifications
-		registerNotificationHandler(OperationDone.NOTIFICATION_ID, uponOperationDone);
+//		registerNotificationHandler(OperationDone.NOTIFICATION_ID, uponOperationDone);
         //Notifications Produced
         registerNotification(PSDeliver.NOTIFICATION_ID, PSDeliver.NOTIFICATION_NAME);
         registerNotificationHandler(MessageDelivery.NOTIFICATION_ID, uponMessageDelivery);
@@ -102,7 +101,6 @@ public class PublishSubscribe extends GenericProtocol {
         this.membership = new HashSet<>();
         this.topicSubs = new HashMap<Integer, TreeSet<Node>>();
         this.activeKnownNodes = new TreeSet<Node>();
-        //TODO: Tens que descobrir o que é o initialState
         paxosN = 0;
         if (props.contains("NetworkContactNode")) {
 
@@ -133,12 +131,12 @@ public class PublishSubscribe extends GenericProtocol {
         }
     }
 
-    private ProtocolNotificationHandler uponOperationDone = new ProtocolNotificationHandler() {
-        @Override
-        public void uponNotification(ProtocolNotification protocolNotification) {
-            OperationDone
-        }
-    };
+//    private ProtocolNotificationHandler uponOperationDone = new ProtocolNotificationHandler() {
+//        @Override
+//        public void uponNotification(ProtocolNotification protocolNotification) {
+//            OperationDone
+//        }
+//    };
 
     private ProtocolMessageHandler uponAddReplicaMessage = new ProtocolMessageHandler() {
         @Override
@@ -168,9 +166,7 @@ public class PublishSubscribe extends GenericProtocol {
         @Override
         public void receive(ProtocolMessage protocolMessage) {
             AddReplicaMessageReply m = (AddReplicaMessageReply) protocolMessage;
-            //TODO: por defenir
-            int seqNumber = 0;
-            Membership members = new Membership(m.getH(), seqNumber, m.getReplicas());
+            Membership members = new Membership(m.getH(), m.getReplicas());
             StartRequest req = new StartRequest(m.getInstancePaxos(), members);
             req.setDestination(MultiPaxos.PROTOCOL_ID);
             try {
