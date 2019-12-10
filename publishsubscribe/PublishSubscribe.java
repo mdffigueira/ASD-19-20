@@ -22,6 +22,7 @@ import dht.DHT;
 import publishsubscribe.messages.AddReplicaMessage;
 import publishsubscribe.messages.AddReplicaMessageReply;
 import utils.Node;
+import utils.Operation;
 import dht.notification.RouteDelivery;
 import dissemination.Dissemination;
 import utils.Membership;
@@ -33,6 +34,7 @@ import floodbcast.FloodBCast;
 import floodbcast.delivers.FloodBCastDeliver;
 import floodbcast.requests.FloodBCastRequest;
 import multipaxos.MultiPaxos;
+import multipaxos.notifications.OperationDone;
 import network.INetwork;
 import network.Host;
 import publishsubscribe.delivers.PSDeliver;
@@ -55,7 +57,8 @@ public class PublishSubscribe extends GenericProtocol {
     public final static int PUBLISH = 3;
     public final static int POPULARITY = 4;
     public final static float POP_PERCENTAGE = 0.7f;
-
+	public static final int ADD_REPLICA = 1;
+	public static final int REMOVE_REPLICA = 2;
 
     //Set of Topics
     private Set<byte[]> topics;
@@ -81,10 +84,11 @@ public class PublishSubscribe extends GenericProtocol {
         registerRequestHandler(PSUnsubscribeRequest.REQUEST_ID, uponUnsubscribeRequest);
         registerRequestHandler(PSPublishRequest.REQUEST_ID, uponPublishRequest);
 
-        //Notifications
-//		registerNotificationHandler(OperationDone.NOTIFICATION_ID, uponOperationDone);
-        //Notifications Produced
+       //Notifications Produced
         registerNotification(PSDeliver.NOTIFICATION_ID, PSDeliver.NOTIFICATION_NAME);
+        
+        //Notifications
+		registerNotificationHandler(OperationDone.NOTIFICATION_ID, uponOperationDone);
         registerNotificationHandler(MessageDelivery.NOTIFICATION_ID, uponMessageDelivery);
         registerNotificationHandler(RouteDelivery.NOTIFICATION_ID, uponRouteDelivery);
         registerNotificationHandler(UpdatePopularity.NOTIFICATION_ID, uponUpdatePopularityNotification);
@@ -129,22 +133,41 @@ public class PublishSubscribe extends GenericProtocol {
         }
     }
 
-//    private ProtocolNotificationHandler uponOperationDone = new ProtocolNotificationHandler() {
-//        @Override
-//        public void uponNotification(ProtocolNotification protocolNotification) {
-//            OperationDone
-//        }
-//    };
+    private ProtocolNotificationHandler uponOperationDone = new ProtocolNotificationHandler() {
+        @Override
+        public void uponNotification(ProtocolNotification protocolNotification) {
+            OperationDone m = (OperationDone) protocolNotification;
+            Operation op = m.getOp();
+            
+            switch(op.getType()) {
+            case REMOVE_REPLICA:
+            	break;
+            case ADD_REPLICA:
+            	Host repToAdd = op.getReplica().getMyself();
+            	membership.add(repToAdd);
+                AddReplicaMessageReply msg = new AddReplicaMessageReply(membership, paxosN, leader);
+                sendMessage(msg, repToAdd);
+            	break;
+            case PUBLISH:
+            	break;
+            }
+        }
+    };
 
     private ProtocolMessageHandler uponAddReplicaMessage = new ProtocolMessageHandler() {
         @Override
         public void receive(ProtocolMessage protocolMessage) {
             AddReplicaMessage m = (AddReplicaMessage) protocolMessage;
-            //TODO: Não tem que mandar para o paxos para os seus visinhos saberem que tem um garino novo?
             if (membership.size() < REPLICA_SIZE) {
-                membership.add(m.getH());
-                AddReplicaMessageReply msg = new AddReplicaMessageReply(membership, paxosN, leader);
-                sendMessage(msg, m.getFrom());
+            	Node repToAdd = new Node(m.getFrom().hashCode(), m.getFrom());
+            	Operation op = new Operation(ADD_REPLICA, null, repToAdd);
+            	OperationRequest req = new OperationRequest(op);
+            	req.setDestination(MultiPaxos.PROTOCOL_ID);
+            	try {
+					sendRequest(req);
+				} catch (DestinationProtocolDoesNotExist e) {
+					e.printStackTrace();
+				}
             }
         }
     };
