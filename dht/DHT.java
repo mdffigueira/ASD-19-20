@@ -312,7 +312,7 @@ public class DHT extends GenericProtocol implements INodeListener {
 			int msgId = req.getMsgId();
 			Message msg = req.getMessage();
 			Node toSend = findSuccessor(msgId);
-			if (toSend.getId() != nodeID.getId() && msg.getTypeM() != POPULARITY) {
+			if (toSend.getId() != nodeID.getId()) {
 				RouteNotify deliverN = new RouteNotify(msgId, toSend, msg, 0);
 				triggerNotification(deliverN);
 			} else {
