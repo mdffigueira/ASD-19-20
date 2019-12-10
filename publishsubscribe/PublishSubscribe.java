@@ -2,12 +2,23 @@ package publishsubscribe;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.apache.logging.log4j.core.util.FileUtils;
 
 import babel.exceptions.DestinationProtocolDoesNotExist;
 import babel.exceptions.HandlerRegistrationException;
@@ -33,6 +44,7 @@ import dissemination.requests.RouteRequest;
 import floodbcast.FloodBCast;
 import floodbcast.delivers.FloodBCastDeliver;
 import floodbcast.requests.FloodBCastRequest;
+import io.netty.channel.unix.Buffer;
 import multipaxos.MultiPaxos;
 import multipaxos.notifications.OperationDone;
 import network.INetwork;
@@ -63,6 +75,7 @@ public class PublishSubscribe extends GenericProtocol {
 	private int paxosN;
 	private Map<Integer, TreeSet<Node>> topicSubs;
 	private Set<Node> activeKnownNodes;
+	private Path topicsFile, topSubsFile;
 
 	@SuppressWarnings("deprecation")
 	public PublishSubscribe(INetwork net) throws HandlerRegistrationException {
@@ -93,7 +106,30 @@ public class PublishSubscribe extends GenericProtocol {
 	public void init(Properties props) {
 
 		//Initialize State
+
 		this.topics = new TreeSet<>();
+		//		topicsFile = Paths.get("src/storage/topics.txt");
+		//		topSubsFile = Paths.get("src/storage/topicsSubs.txt");
+		//		if(Files.exists(topicsFile)) {
+		//			try {
+		//				List<String> file = Files.readAllLines(topicsFile);
+		//				
+		//				for(String s : file) {
+		//					topics.add(s.getBytes());
+		//				}
+		//			} catch (IOException e) {
+		//				e.printStackTrace();
+		//			}
+		//		}
+		//		else {
+		//			try {
+		//				Files.createFile(topicsFile);
+		//			} catch (IOException e) {
+		//				e.printStackTrace();
+		//			}
+		//		}        
+
+
 		this.membership = new HashSet<>();
 		this.topicSubs = new HashMap<Integer, TreeSet<Node>>();
 		this.activeKnownNodes = new TreeSet<Node>();
@@ -224,6 +260,8 @@ public class PublishSubscribe extends GenericProtocol {
 	};
 
 	private ProtocolNotificationHandler uponUpdatePopularityNotification = new ProtocolNotificationHandler() {
+		private Path topSubsFile;
+
 		@Override
 		public void uponNotification(ProtocolNotification not) {
 			UpdatePopularity req = (UpdatePopularity) not;
@@ -234,9 +272,13 @@ public class PublishSubscribe extends GenericProtocol {
 				if (topicSubs.containsKey(topic)) {
 					if (msgType == SUBSCRIBE) {
 						topicSubs.get(topic).add(nodeInt);
+						//TODO:
+						//						addNodeToTopic(topic, nodeInt);
 						activeKnownNodes.add(nodeInt);
 					} else if (msgType == UNSUBSCRIBE) {
 						topicSubs.get(topic).remove(nodeInt);
+						//TODO:
+						//						removeNodeFromTopic(topic, nodeInt);
 						boolean removeFromActiveNodes = true;
 						for (TreeSet<Node> subs : topicSubs.values()) {
 							if (subs.contains(nodeInt))
@@ -249,12 +291,70 @@ public class PublishSubscribe extends GenericProtocol {
 						TreeSet<Node> nodes = new TreeSet<>();
 						nodes.add(nodeInt);
 						topicSubs.put(topic, nodes);
+						//TODO:
+						//						addNodeToTopic(topic, nodeInt);
 						activeKnownNodes.add(nodeInt);
 					}
 				}
 			}
 		}
 	};
+
+	//TODO:
+//	private void removeNodeFromTopic(int topic, Node nodeInt) throws IOException{
+//		Path topSubsFile = Paths.get("src/storage/topicsSubs.txt");
+//		String nodeInterested = nodeInt.getMyself().getAddress()+":"+nodeInt.getMyself().getPort();
+//		BufferedWriter buf;
+//		
+//		if(Files.exists(topSubsFile)) {
+//			List<String> topics = Files.readAllLines(topSubsFile);
+//			Path temp = Files.createTempFile(null, null, ".txt");
+//			buf = Files.newBufferedWriter(temp);
+//
+//			for(String str: topics) {
+//				if(str.contains(topic+";"))
+//					if(str.contains(nodeInterested)) {
+//						str = str.replace(";"+nodeInterested+";",";");
+//					}
+//				buf.write(str);
+//				buf.newLine();
+//			}
+//			buf.flush();
+//			buf.close();
+//			Files.copy(temp, topSubsFile);
+//		}
+//	}
+	
+	//TODO:
+//		private void addNodeToTopic(int topic, Node nodeInt) throws IOException{
+//			
+//			String nodeInterested = nodeInt.getMyself().getAddress()+":"+nodeInt.getMyself().getPort();
+//			BufferedWriter buf;
+//			
+//			if(Files.exists(topSubsFile)) {
+//				List<String> topics = Files.readAllLines(topSubsFile);
+//				Path temp = Files.createTempFile(null, null, ".txt");
+//				buf = Files.newBufferedWriter(temp);
+//	
+//				for(String str: topics) {
+//					if(str.contains(topic+";"))
+//						if(!str.contains(nodeInterested)) {
+//							str = str + nodeInterested+";";
+//						}
+//					buf.write(str);
+//					buf.newLine();
+//				}
+//				Files.copy(temp, topSubsFile);
+//			}
+//			else {
+//				Files.createFile(topSubsFile);
+//				buf = Files.newBufferedWriter(topSubsFile);
+//				buf.write(nodeInt.getId()+ ";"+nodeInterested+";");
+//				buf.newLine();
+//			}
+//			buf.flush();
+//			buf.close();
+//		}
 
 	private void sendToFlood(Message msg) {
 		//Create Message
@@ -275,6 +375,9 @@ public class PublishSubscribe extends GenericProtocol {
 			PSSubscribeRequest req = (PSSubscribeRequest) r;
 			byte[] topic = req.getTopic();
 			topics.add(topic);
+			//TODO:
+			//			BufferedWriter buffer = Files.newBufferedWriter(topicsFile);
+			//			buffer.write(new String(topic, StandardCharsets.UTF_8));
 			disseminateRequest(req.getTopic(), null, SUBSCRIBE);
 		}
 	};
@@ -285,6 +388,17 @@ public class PublishSubscribe extends GenericProtocol {
 			PSUnsubscribeRequest req = (PSUnsubscribeRequest) r;
 			byte[] topic = req.getTopic();
 			topics.remove(topic);
+			//TODO: 
+			//			List<String> topicsStr = Files.readAllLines(topicsFile);
+			//			Path temp = Files.createTempFile(null, null, null);
+			//			BufferedWriter in = Files.newBufferedWriter(temp);
+			//			String topString = new String(topic, StandardCharsets.UTF_8);
+			//			for(String s: topicsStr)
+			//				if(!s.equals(topString))
+			//					in.write(s);
+			//			in.flush();
+			//			in.close();
+			//			Files.copy(temp, topicsFile);
 			disseminateRequest(req.getTopic(), null, UNSUBSCRIBE);
 		}
 	};
