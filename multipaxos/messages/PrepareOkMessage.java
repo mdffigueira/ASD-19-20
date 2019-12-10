@@ -9,42 +9,41 @@ import java.net.UnknownHostException;
 
 public class PrepareOkMessage extends ProtocolMessage {
     public static final short MSG_CODE = 204;
-    private int n;
-    private Operation op;
+    private int seqN, instN;
 
-    public PrepareOkMessage(int n, Operation op) {
+    public PrepareOkMessage(int seqN, int instN) {
         super(PrepareOkMessage.MSG_CODE);
-        this.n = n;
-        this.op = op;
+        this.seqN = seqN;
+        this.instN = instN;
     }
 
-    public int getN() {
-        return n;
+    public int getSeqN() {
+        return seqN;
     }
 
-    public Operation getOp() {
-        return op;
+    public int getInstN() {
+        return instN;
     }
 
     public static final ISerializer<PrepareOkMessage> serializer = new ISerializer<PrepareOkMessage>() {
         @Override
         public void serialize(PrepareOkMessage m, ByteBuf byteBuf) {
             // byteBuf.writeInt(m.seqNumb);
-            byteBuf.writeInt(m.n);
-            m.op.serialize(byteBuf);
+            byteBuf.writeInt(m.seqN);
+            byteBuf.writeInt(m.instN);
         }
 
         @Override
         public PrepareOkMessage deserialize(ByteBuf byteBuf) throws UnknownHostException {
-            int seqNumb = byteBuf.readInt();
-            int n = byteBuf.readInt();
-            Operation op = Operation.deserialize(byteBuf);
-            return new PrepareOkMessage(n, op);
+            int seqN = byteBuf.readInt();
+            int instN = byteBuf.readInt();
+            //Operation op = Operation.deserialize(byteBuf);
+            return new PrepareOkMessage(seqN, instN);
         }
 
         @Override
         public int serializedSize(PrepareOkMessage m) {
-            return Integer.BYTES * 2 + m.op.serializedSize();
+            return Integer.BYTES * 2;
         }
     };
 }

@@ -1,4 +1,4 @@
-package multipaxos.Notification;
+package multipaxos.notifications;
 
 import babel.notification.ProtocolNotification;
 import utils.Operation;

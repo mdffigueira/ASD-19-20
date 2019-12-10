@@ -19,7 +19,6 @@ import babel.protocol.GenericProtocol;
 import babel.protocol.event.ProtocolMessage;
 import babel.requestreply.ProtocolRequest;
 import dht.DHT;
-import multipaxos.Notification.OperationDone;
 import publishsubscribe.messages.AddReplicaMessage;
 import publishsubscribe.messages.AddReplicaMessageReply;
 import utils.Node;
@@ -45,7 +44,6 @@ import publishsubscribe.requests.PSPublishRequest;
 import publishsubscribe.requests.PSSubscribeRequest;
 import publishsubscribe.requests.PSUnsubscribeRequest;
 import publishsubscribe.requests.*;
-import utils.Operation;
 
 public class PublishSubscribe extends GenericProtocol {
 
