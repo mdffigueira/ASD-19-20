@@ -4,7 +4,7 @@ import babel.requestreply.ProtocolRequest;
 import utils.Membership;
 
 public class StartRequest extends ProtocolRequest {
-public static final short REQUEST_ID=505;
+public static final short REQUEST_ID=508;
 private Membership membership;
 private int instancePaxos;
 

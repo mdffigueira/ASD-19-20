@@ -8,24 +8,23 @@ import utils.Operation;
 import java.net.UnknownHostException;
 
 public class AcceptMessage extends ProtocolMessage {
-    public static final short MSG_CODE = 202;
-    private int n;
+    public static final short MSG_CODE = 201;
+    private int instanceNumber, np;
     private Operation op;
-    private int seqNumb;
 
-    public AcceptMessage(int n, Operation op, int seqNumb) {
+    public AcceptMessage(int instanceNumber, int np, Operation op) {
         super(AcceptMessage.MSG_CODE);
-        this.n = n;
+        this.instanceNumber = instanceNumber;
+        this.np = np;
         this.op = op;
-        this.seqNumb = seqNumb;
     }
 
-    public int getN() {
-        return n;
+    public int getInstanceNumber() {
+        return instanceNumber;
     }
 
-    public int getSeqNumb() {
-        return seqNumb;
+    public int getNp() {
+        return np;
     }
 
     public Operation getOp() {
@@ -35,17 +34,17 @@ public class AcceptMessage extends ProtocolMessage {
     public static final ISerializer<AcceptMessage> serializer = new ISerializer<AcceptMessage>() {
         @Override
         public void serialize(AcceptMessage m, ByteBuf byteBuf) {
-            byteBuf.writeInt(m.seqNumb);
-            byteBuf.writeInt(m.n);
+            byteBuf.writeInt(m.instanceNumber);
+            byteBuf.writeInt(m.np);
             m.op.serialize(byteBuf);
         }
 
         @Override
         public AcceptMessage deserialize(ByteBuf byteBuf) throws UnknownHostException {
-            int seqNumb = byteBuf.readInt();
-            int n = byteBuf.readInt();
+            int instanceNumber = byteBuf.readInt();
+            int np = byteBuf.readInt();
             Operation op = Operation.deserialize(byteBuf);
-            return new AcceptMessage(n, op, seqNumb);
+            return new AcceptMessage(instanceNumber,np, op);
         }
 
         @Override

@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 
 public class FindSuccessorMessage extends ProtocolMessage {
 
-    public final static short MSG_CODE = 801;
+    public final static short MSG_CODE = 101;
 
     Node n;
     int next;

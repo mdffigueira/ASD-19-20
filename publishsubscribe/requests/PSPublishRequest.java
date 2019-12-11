@@ -4,7 +4,7 @@ import babel.requestreply.ProtocolRequest;
 
 public class PSPublishRequest extends ProtocolRequest {
 
-    public static final short REQUEST_ID = 502;
+    public static final short REQUEST_ID = 504;
 
     private byte[] message;
     private byte[] topic;

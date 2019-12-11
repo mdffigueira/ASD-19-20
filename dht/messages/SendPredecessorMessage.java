@@ -8,7 +8,7 @@ import network.ISerializer;
 import java.net.UnknownHostException;
 
 public class SendPredecessorMessage extends ProtocolMessage {
-    public final static short MSG_CODE = 806;
+    public final static short MSG_CODE = 107;
     Host predecessor;
 
     public SendPredecessorMessage(Host predecessor) {

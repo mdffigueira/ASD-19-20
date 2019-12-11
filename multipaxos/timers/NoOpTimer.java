@@ -4,7 +4,7 @@ import babel.timer.ProtocolTimer;
 
 public class NoOpTimer extends ProtocolTimer {
 
-    public static final short TimerCode = 201;
+    public static final short TimerCode = 204;
 
     public NoOpTimer() {
         super(NoOpTimer.TimerCode);
@@ -12,6 +12,6 @@ public class NoOpTimer extends ProtocolTimer {
 
     @Override
     public Object clone() {
-        return null;
+        return this;
     }
 }

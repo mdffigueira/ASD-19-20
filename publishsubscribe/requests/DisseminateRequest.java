@@ -5,7 +5,7 @@ import utils.Message;
 
 public class DisseminateRequest extends ProtocolRequest {
 
-    public static final short REQUEST_ID = 501;
+    public static final short REQUEST_ID = 502;
 
     Message m;
     private byte[] topic;

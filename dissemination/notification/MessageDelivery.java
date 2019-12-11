@@ -5,7 +5,7 @@ import utils.Message;
 
 public class MessageDelivery extends ProtocolNotification {
 
-    public static final short NOTIFICATION_ID = 901;
+    public static final short NOTIFICATION_ID = 601;
     public static final String NOTIFICATION_NAME = "MessageDelivery";
 
     private Message message;

@@ -22,7 +22,7 @@ import java.util.*;
 
 public class GossipBCast extends GenericProtocol {
 
-    public final static short PROTOCOL_ID = 200;
+    public final static short PROTOCOL_ID = 800;
     public final static String PROTOCOL_NAME = "Gossip BCast";
 
     //Parameters

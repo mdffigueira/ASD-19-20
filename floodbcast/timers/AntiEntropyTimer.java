@@ -11,6 +11,6 @@ public static final short TimerCode = 301;
 
     @Override
     public Object clone() {
-        return null;
+        return this;
     }
 }

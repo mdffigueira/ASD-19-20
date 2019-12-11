@@ -10,7 +10,7 @@ import network.Host;
 import network.ISerializer;
 
 public class HyParViewShuffleMessage extends ProtocolMessage{
-	public final static short MSG_CODE = 401;
+	public final static short MSG_CODE = 408;
 	private final Host sender,destination;
 	private final Set<Host> shuffleSet;
 	private int shuffleTtl;

@@ -32,7 +32,7 @@ import utils.Topic;
 
 public class Dissemination extends GenericProtocol {
 
-	public final static short PROTOCOL_ID = 900;
+	public final static short PROTOCOL_ID = 600;
 
 	private final static int SUBSCRIBE = 1;
 	private final static int UNSUBSCRIBE = 2;

@@ -6,7 +6,7 @@ import dht.notification.RouteDelivery;
 
 
 public class UpdatePopularity extends ProtocolNotification {
-    public final static short NOTIFICATION_ID = 901;
+    public final static short NOTIFICATION_ID = 602;
     public final static String NOTIFICATION_NAME = "popularityUpdate";
 
     private Node nodeInterested;

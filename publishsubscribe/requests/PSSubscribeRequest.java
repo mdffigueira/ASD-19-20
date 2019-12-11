@@ -4,7 +4,7 @@ import babel.requestreply.ProtocolRequest;
 
 public class PSSubscribeRequest extends ProtocolRequest {
 
-    public static final short REQUEST_ID = 503;
+    public static final short REQUEST_ID = 505;
     private byte[] message;
     private byte[] topic;
 

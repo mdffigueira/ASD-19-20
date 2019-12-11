@@ -14,7 +14,7 @@ import javax.print.attribute.standard.MediaSize.Other;
 
 public class HyParViewForwardJoinMessage extends ProtocolMessage {
 
-    public final static short MSG_CODE = 404;
+    public final static short MSG_CODE = 402;
    // private final Host n;
     private final Host newNode;
     private final Host myself;

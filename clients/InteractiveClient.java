@@ -41,6 +41,7 @@ public class InteractiveClient implements INotificationConsumer {
 		
 	    PublishSubscribe ps = new PublishSubscribe(net);
 	    ps.init(configProps);
+	    ps.wait();
 
 
 		//Register protocols

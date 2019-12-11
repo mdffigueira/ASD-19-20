@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 
 public class DisseminationMessage extends ProtocolMessage {
 
-	public final static short MSG_CODE = 908;
+	public final static short MSG_CODE = 601;
 
 	private Message msg;
 	private int msgId;

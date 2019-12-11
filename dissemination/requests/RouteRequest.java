@@ -5,7 +5,7 @@ import utils.Message;
 
 public class RouteRequest extends ProtocolRequest {
 
-    public static final short REQUEST_ID = 901;
+    public static final short REQUEST_ID = 601;
 
     private int id;
     private Message message;

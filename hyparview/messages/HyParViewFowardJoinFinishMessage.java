@@ -8,7 +8,7 @@ import network.Host;
 import network.ISerializer;
 
 public class HyParViewFowardJoinFinishMessage extends ProtocolMessage {
-	public static final short MSG_CODE = 409;
+	public static final short MSG_CODE = 403;
 	private Host myself;
 	public HyParViewFowardJoinFinishMessage(Host myself) {
 		super(MSG_CODE);

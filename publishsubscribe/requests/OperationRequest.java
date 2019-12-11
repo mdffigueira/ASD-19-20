@@ -4,7 +4,7 @@ import babel.requestreply.ProtocolRequest;
 import utils.Operation;
 
 public class OperationRequest extends ProtocolRequest {
-    public static final short REQUEST_ID = 506;
+    public static final short REQUEST_ID = 503;
     private Operation op;
 
     public OperationRequest(Operation op) {

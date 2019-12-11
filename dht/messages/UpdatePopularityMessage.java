@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 
 
 public class UpdatePopularityMessage extends ProtocolMessage {
-    public final static short MSG_CODE = 808;
+    public final static short MSG_CODE = 108;
     private int msgId;
     private Node nodeInterested;
     private int typeMsg;

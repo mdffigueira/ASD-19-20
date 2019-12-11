@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ReturnCurrMembshipMessage extends ProtocolMessage {
-    public final static short MSG_CODE = 503;
+    public final static short MSG_CODE = 506;
     private Set<Host> membership;
     private volatile int size = -1;
 

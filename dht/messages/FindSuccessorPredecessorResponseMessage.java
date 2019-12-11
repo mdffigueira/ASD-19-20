@@ -8,7 +8,7 @@ import network.ISerializer;
 import java.net.UnknownHostException;
 
 public class FindSuccessorPredecessorResponseMessage extends ProtocolMessage {
-public final static short MSG_CODE = 803;
+public final static short MSG_CODE = 103;
 Node n ;
 public FindSuccessorPredecessorResponseMessage(Node n){
     super(FindSuccessorPredecessorResponseMessage.MSG_CODE);

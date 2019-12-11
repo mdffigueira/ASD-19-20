@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public class AntiEntropyMessage extends ProtocolMessage {
-    public final static short MSG_CODE = 302;
+    public final static short MSG_CODE = 301;
     private final Set<UUID> knownMessages;
     private volatile int size = -1;
 

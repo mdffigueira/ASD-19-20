@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class FloodBCastProtocolMessage extends ProtocolMessage {
 
-    public final static short MSG_CODE = 301;
+    public final static short MSG_CODE = 302;
 
     private final UUID mid;
     private byte[] payload;

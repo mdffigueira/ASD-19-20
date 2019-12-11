@@ -3,6 +3,7 @@ package utils;
 import java.net.UnknownHostException;
 
 import io.netty.buffer.ByteBuf;
+import network.Host;
 
 public class Operation {
     public static final int ADD_REPLICA = 1;
@@ -11,12 +12,14 @@ public class Operation {
 
     private int type;
     private Message msg;
-    private Node replica;
+    private Host replica;
+    private Host leader;
     
-    public Operation(int type, Message msg, Node replica) {
+    public Operation(int type, Message msg, Host replica, Host leader) {
         this.type = type;
         this.msg = msg;
         this.replica = replica;
+        this.leader = leader;
     }
 
     public Message getMsg() {
@@ -26,23 +29,29 @@ public class Operation {
     public int getType() {
         return type;
     }
+    public Host getReplica() {
+        return replica;
+    }
+    public Host getLeader(){
+        return leader;
+    }
 
     public void serialize(ByteBuf byteBuf){
         byteBuf.writeInt(type);
         msg.serialize(byteBuf);
         replica.serialize(byteBuf);
+        replica.serialize(byteBuf);
     }
     public static Operation deserialize(ByteBuf byteBuf) throws UnknownHostException{
         int t=byteBuf.readInt();
         Message m= Message.deserialize(byteBuf);
-        Node rep = Node.deserialize(byteBuf);
-        return new Operation(t,m, rep);
+        Host rep = Host.deserialize(byteBuf);
+        Host leader =Host.deserialize(byteBuf);
+        return new Operation(t,m, rep,leader);
     }
     public int serializedSize(){
-        return Integer.BYTES+msg.serializedSize()+replica.serializedSize();
+        return Integer.BYTES+msg.serializedSize()+replica.serializedSize()+leader.serializedSize();
     }
 
-	public Node getReplica() {
-		return replica;
-	}
+
 }

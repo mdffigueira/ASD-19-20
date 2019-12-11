@@ -10,7 +10,7 @@ import network.Host;
 
 public class HyParViewMembershipReply extends ProtocolReply {
 
-    public static final short REPLY_ID = HyParViewMembershipRequest.REQUEST_ID;
+    public static final short REPLY_ID = 401;
 
     private final UUID requestID;
     private final Set<Host> activeView;

@@ -8,7 +8,7 @@ import network.ISerializer;
 import java.net.UnknownHostException;
 
 public class NotifyMessage extends ProtocolMessage {
-    public final static short MSG_CODE = 805;
+    public final static short MSG_CODE = 105;
     Node n;
 
     public NotifyMessage(Node n) {

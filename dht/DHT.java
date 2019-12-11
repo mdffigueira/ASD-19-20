@@ -35,7 +35,7 @@ import publishsubscribe.PublishSubscribe;
 import utils.Node;
 
 public class DHT extends GenericProtocol implements INodeListener {
-	public final static short PROTOCOL_ID = 800;
+	public final static short PROTOCOL_ID = 100;
 	private final static int M = 32;
 	private Node[] finger;
 	private Node successor, predecessor;

@@ -10,7 +10,7 @@ import network.ISerializer;
 public class HyParViewNeighborMessage extends ProtocolMessage  {
 	private  int priorityLevel;
 	private Host myself;
-	public final static short MSG_CODE = 402;
+	public final static short MSG_CODE = 406;
 	public HyParViewNeighborMessage( Host myself,int priorityLevel) {
 		super(HyParViewNeighborMessage.MSG_CODE);
 		this.priorityLevel= priorityLevel;

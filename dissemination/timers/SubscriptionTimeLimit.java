@@ -4,7 +4,7 @@ import babel.timer.ProtocolTimer;
 import utils.Node;
 
 public class SubscriptionTimeLimit extends ProtocolTimer {
-    public static final short TimerCode =901;
+    public static final short TimerCode =602;
     private int msgId;
     private Node nodeToRemove;
 

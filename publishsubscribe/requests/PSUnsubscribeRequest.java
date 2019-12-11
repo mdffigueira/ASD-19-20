@@ -4,7 +4,7 @@ import babel.requestreply.ProtocolRequest;
 
 public class PSUnsubscribeRequest extends ProtocolRequest {
 
-    public static final short REQUEST_ID = 504;
+    public static final short REQUEST_ID = 506;
 
     private byte[] topic;
 

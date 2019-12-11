@@ -6,7 +6,7 @@ import utils.Message;
 
 public class RouteNotify extends ProtocolNotification {
 
-    public final static short NOTIFICATION_ID = 101;
+    public final static short NOTIFICATION_ID = 102;
     public final static String NOTIFICATION_NAME = "node";
 
     private  Node upStream;

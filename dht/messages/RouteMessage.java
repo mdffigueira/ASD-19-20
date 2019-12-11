@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 
 
 public class RouteMessage extends ProtocolMessage {
-    public final static short MSG_CODE = 807;
+    public final static short MSG_CODE = 106;
     private int msgId;
     private Message message;
 

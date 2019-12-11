@@ -4,7 +4,7 @@ import babel.timer.ProtocolTimer;
 import utils.Message;
 
 public class SubscribeAgainTimer extends ProtocolTimer {
-    public static final short TimerCode = 902;
+    public static final short TimerCode = 601;
     private int msgId;
     private Message msg;
     public SubscribeAgainTimer(int msgId, Message msg) {

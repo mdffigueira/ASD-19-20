@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class HyParViewDisconnectMessage extends ProtocolMessage {
 
-    public final static short MSG_CODE = 403;
+    public final static short MSG_CODE = 401;
     private final Host destination;
     private final Host sender;
     private volatile int size = -1;

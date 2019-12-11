@@ -27,7 +27,7 @@ import java.util.*;
 public class GlobalMembership extends GenericProtocol implements INodeListener {
 
     //Numeric identifier of the protocol
-    public final static short PROTOCOL_ID = 100;
+    public final static short PROTOCOL_ID = 900;
     public final static String PROTOCOL_NAME = "Global Membership";
     private Set<Host> peers;
     private short sampleSize;

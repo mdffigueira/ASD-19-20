@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class HyParViewJoinMessage extends ProtocolMessage {
 
-    public final static short MSG_CODE = 405;
+    public final static short MSG_CODE = 404;
     //private final Host destination;
     private final Host sender;
     private volatile int size = -1;

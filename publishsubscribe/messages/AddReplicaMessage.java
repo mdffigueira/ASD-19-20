@@ -7,7 +7,7 @@ import network.ISerializer;
 import java.net.UnknownHostException;
 
 public class AddReplicaMessage extends ProtocolMessage {
-    public static final short MSG_CODE = 506;
+    public static final short MSG_CODE = 501;
     private Host h;
 
     public AddReplicaMessage(Host h) {

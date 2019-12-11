@@ -8,7 +8,7 @@ import java.net.UnknownHostException;
 
 
 public class PrepareMessage extends ProtocolMessage {
-    public final static short MSG_CODE = 201;
+    public final static short MSG_CODE = 204;
     private int instanceNumber, sequenceNumber;
 
     public PrepareMessage(int instanceNumber, int sequenceNumber) {
