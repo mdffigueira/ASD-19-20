@@ -30,13 +30,13 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
     public final static short PROTOCOL_ID = 200;
     public final static int MAXREPLICAS = 3;
 
-    private int np = 0;// (highest prepare) nº do lider
+    private int np;// (highest prepare) nº do lider
     private int sequenceNumber;//n=>psn
     private int instanceNumber;//(nºo de instanceNumberpaxos)
     private Operation op;
     UUID noOpTimer, noMajorityPrepareTimer, noMajorityAcceptTimer, newLeaderTimer;
     Set<Host> replicas;
-    Set<Host> aset;
+    Set<Host> acceptAset;
     Set<Host> leaderAset;
 
     Host leader;
@@ -70,10 +70,13 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
     @Override
     public void init(Properties props) {
         replicas = new HashSet<>();
-        aset = new HashSet<>();
+        acceptAset = new HashSet<>();
         leaderAset = new HashSet<>();
         System.out.println("Multipaxos set");
         noOpTimer = null;
+        np =0;
+        sequenceNumber=0;
+        instanceNumber=0;
         noMajorityPrepareTimer = null;
         noMajorityAcceptTimer = null;
         newLeaderTimer = null;
@@ -149,23 +152,22 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
     private final ProtocolMessageHandler uponAcceptOKMessage = new ProtocolMessageHandler() {
         @Override
         public void receive(ProtocolMessage protocolMessage) {
-            System.out.println("hey recebi o AcceptOk");
             AcceptOkMessage m = (AcceptOkMessage) protocolMessage;
             int inst = m.getInstanceNumber();
             int n = m.getNp();
             op = m.getOp();
             if (inst > instanceNumber) {
-                aset.clear();
+                acceptAset.clear();
             }
             if (n >= np && inst >= instanceNumber) {
                 np = n;
                 instanceNumber = inst;
-                aset.add(m.getFrom());
-                if (aset.size() >= (replicas.size() / 2) + 1) {
+                acceptAset.add(m.getFrom());
+                if (acceptAset.size() >= (replicas.size() / 2) + 1) {
                     OperationDone notification = new OperationDone(op, instanceNumber, np);
                     triggerNotification(notification);
                     instanceNumber++;
-                    aset.clear();//Todo:rever isto
+                    acceptAset.clear();//Todo:rever isto
                     cancelTimer(noMajorityAcceptTimer);
                 }
             }
@@ -173,23 +175,14 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
     };
 
 
-    public void Prepare() {
-        sequenceNumber = sequenceNumber + replicas.size();
-        PrepareMessage prepare = new PrepareMessage(instanceNumber, sequenceNumber);
-        leaderAset.clear();
-        for (Host h : replicas)
-            sendMessage(prepare, h);
-        noMajorityPrepareTimer = setupTimer(new NoMajorityPrepareTimer(), 120000);
-
-    }
-
     private final ProtocolMessageHandler uponPrepareMessage = new ProtocolMessageHandler() {
         @Override
         public void receive(ProtocolMessage protocolMessage) {
             int n = ((PrepareMessage) protocolMessage).getSequenceNumber();
-            Host leader = protocolMessage.getFrom();
+
             int instN = ((PrepareMessage) protocolMessage).getInstanceNumber();
             if (n > np) {
+                Host leader = protocolMessage.getFrom();
                 np = n;
                 PrepareOkMessage m = new PrepareOkMessage(n, instN);
                 sendMessage(m, leader);
@@ -204,7 +197,7 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
             if (leaderAset.size() >= (replicas.size() / 2) + 1) {
 
                 cancelTimer(noMajorityPrepareTimer);
-                leaderAset.clear();//TODO: possivelmente isto tem que ser verificado no timer para nao dar merda( muito probavelente é pra cagar)
+                leaderAset.clear();//TODO: possivelmente isto tem que ser verificado no timer para nao dar porcaria
             }
         }
     };
@@ -238,6 +231,15 @@ public class MultiPaxos extends GenericProtocol implements INodeListener {
             leader = null;
         }
     };
+    private void Prepare() {
+        sequenceNumber = sequenceNumber + replicas.size();
+        PrepareMessage prepare = new PrepareMessage(instanceNumber, sequenceNumber);
+        leaderAset.clear();
+        for (Host h : replicas)
+            sendMessage(prepare, h);
+        noMajorityPrepareTimer = setupTimer(new NoMajorityPrepareTimer(), 120000);
+
+    }
 
     //TIMERS
     private final ProtocolTimerHandler uponNewLeaderTimer = new ProtocolTimerHandler() {
